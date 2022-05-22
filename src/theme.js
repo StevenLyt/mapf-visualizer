@@ -94,7 +94,7 @@ const theme = {
       ...rawTheme.typography.h6,
       ...fontHeader,
       fontSize: 18,
-      fontFamily: "Nunito",
+      fontFamily: "Mulish",
     },
     subtitle1: {
       ...rawTheme.typography.subtitle1,

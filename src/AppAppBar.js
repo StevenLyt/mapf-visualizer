@@ -24,7 +24,7 @@ function AppAppBar() {
             variant="h6"
             underline="none"
             color="inherit"
-            href="todo"
+            href="/"
             sx={{ fontSize: 24 }}
           >
             MAPF Visualizer
