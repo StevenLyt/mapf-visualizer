@@ -165,7 +165,7 @@ class LAMAPFVisualizer extends Component {
       }),
     };
 
-    fetch("http://localhost:8080/LA-MAPF", req)
+    fetch("http://10.182.0.2:8080/LA-MAPF", req)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
