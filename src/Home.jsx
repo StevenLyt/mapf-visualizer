@@ -113,7 +113,7 @@ export default function Home() {
             <Grid item xs={12} md={4}>
               <Box
                 component="img"
-                src={require("./asset/mapf.png")}
+                src={require("./asset/mapf-demo.gif")}
                 sx={{
                   pointerEvents: "none",
                   position: "absolute",

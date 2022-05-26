@@ -20,10 +20,14 @@ import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import AddIcon from "@mui/icons-material/Add";
+import Dialog from "@mui/material/Dialog";
 import Box from "@mui/material/Box";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import Accordion from "@mui/material/Accordion";
-
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 
 import randomColor from "randomcolor";
@@ -70,6 +74,7 @@ class LAMAPFVisualizer extends Component {
       planningTime: -1,
       planningStatus: "",
       paths: [],
+      isDialogOpen: false,
     };
   }
 
@@ -128,11 +133,75 @@ class LAMAPFVisualizer extends Component {
     );
   }
 
-  requestSolution(e) {
+  async requestSolution(e) {
     e.preventDefault();
 
+    if (this.state.agents.length === 0) {
+      this.setState({ isDialogOpen: true });
+      return;
+    }
     this.setState({ isPlanning: true });
-    console.log("set");
+
+    // change agents to border
+    this.state.agents.forEach((agent) => {
+      var height = agent.height;
+      var width = agent.width;
+      var color = agent.color;
+      for (let i = agent.SR; i < agent.SR + height; i++) {
+        for (let j = agent.SC; j < agent.SC + width; j++) {
+          document.getElementById(`grid-${i}-${j}`).style.backgroundColor =
+            "#fff";
+          if (i === agent.SR) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderTop = `4px solid ${color}`;
+          }
+          if (i === agent.SR + height - 1) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderBottom = `4px solid ${color}`;
+          }
+          if (j === agent.SC) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderLeft = `4px solid ${color}`;
+          }
+          if (j === agent.SC + width - 1) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderRight = `4px solid ${color}`;
+          }
+        }
+      }
+      for (let i = agent.GR; i < agent.GR + height; i++) {
+        for (let j = agent.GC; j < agent.GC + width; j++) {
+          document.getElementById(`grid-${i}-${j}`).style.backgroundColor =
+            "#fff";
+          if (i === agent.GR) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderTop = `4px solid ${color}`;
+          }
+          if (i === agent.GR + height - 1) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderBottom = `4px solid ${color}`;
+          }
+          if (j === agent.GC) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderLeft = `4px solid ${color}`;
+          }
+          if (j === agent.GC + width - 1) {
+            document.getElementById(
+              `grid-${i}-${j}`
+            ).style.borderRight = `4px solid ${color}`;
+          }
+        }
+      }
+    });
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     var walls = [];
     var agents = [];
     this.state.map.forEach((row, rowId) => {
@@ -165,7 +234,7 @@ class LAMAPFVisualizer extends Component {
       }),
     };
 
-    fetch("http://34.125.119.104:8080/LA-MAPF", req)
+    fetch("http://localhost:8080/LA-MAPF", req)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
@@ -176,14 +245,36 @@ class LAMAPFVisualizer extends Component {
           paths: data.paths,
         });
         if (data.status === "Optimal") {
-          console.log();
+          console.log("111");
           var newMap = structuredClone(this.state.map);
           data.paths.forEach((path, agentId) => {
             var color = this.state.agents[agentId].color;
-            path.forEach((loc) => {
-              var l = this.decodeLocation(parseInt(loc));
-              newMap[l.r][l.c].color = color;
-            });
+            var height = this.state.agents[agentId].height;
+            var width = this.state.agents[agentId].width;
+            for (let t = 0; t < path.length; t++) {
+              var l = this.decodeLocation(parseInt(path[t]));
+              var SR = l.r;
+              var SC = l.c;
+              for (let i = SR; i < SR + height; i++) {
+                for (let j = SC; j < SC + width; j++) {
+                  setTimeout(() => {
+                    document.getElementById(
+                      `grid-${i}-${j}`
+                    ).style.backgroundColor = color;
+                    document.getElementById(`grid-${i}-${j}`).style.border = "";
+                  }, 1000 * t);
+                  if (t < path.length - 1) {
+                    setTimeout(() => {
+                      document.getElementById(
+                        `grid-${i}-${j}`
+                      ).style.backgroundColor = "#ffffff";
+                      // document.getElementById(`grid-${i}-${j}`).style.border =
+                      //   "1px solid rgb(130, 130, 130)";
+                    }, 1000 * (t + 0.999));
+                  }
+                }
+              }
+            }
           });
           this.setState({ map: newMap });
         } else if (data.status === "No solutions") {
@@ -449,6 +540,32 @@ class LAMAPFVisualizer extends Component {
           height: this.state.windowHeight * 0.7,
         }}
       >
+        <Dialog
+          open={this.state.isDialogOpen}
+          onClose={() => {
+            this.setState({ isDialogOpen: false });
+          }}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Empty agent list!</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Please add at least one agent before start planning.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                this.setState({ isDialogOpen: false });
+              }}
+              autoFocus
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* 2d map */}
         <div
           id="map-container"
@@ -482,6 +599,7 @@ class LAMAPFVisualizer extends Component {
                         isGoal={grid.isGoal}
                         agentId={grid.agent}
                         color={grid.color}
+                        isPlanned={this.state.isPlanned}
                         onMouseDown={(row, col) =>
                           this.handleMouseDown(row, col)
                         }

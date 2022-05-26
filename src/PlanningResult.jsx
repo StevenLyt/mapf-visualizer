@@ -63,9 +63,11 @@ export default class PlanningResult extends Component {
           ""
         )}
 
-        <Typography variant="h5">{"Algorithm: " + algorithm}</Typography>
         <Typography variant="h5">
-          {"Execution time: " + planningTime}
+          <b>{"Algorithm: " + algorithm} </b>
+        </Typography>
+        <Typography variant="h5">
+          <b>{"Execution time: " + planningTime}</b>
         </Typography>
         <div className="path-detail">
           {isSuccessful
@@ -77,8 +79,11 @@ export default class PlanningResult extends Component {
                 });
                 var p = path.join("->");
                 return (
-                  <Typography variant="h5">
-                    {"Agent " + (agentId + 1) + ": " + p}
+                  <Typography variant="h5" key={agentId}>
+                    <b>
+                      <i>{"Agent " + (agentId + 1) + ": "}</i>
+                    </b>
+                    {p}
                   </Typography>
                 );
               })

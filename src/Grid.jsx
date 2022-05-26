@@ -18,6 +18,7 @@ export default class SingleGrid extends Component {
       isWall,
       isStart,
       isGoal,
+      isPlanned,
       agentId,
       color,
       onMouseDown,
@@ -33,7 +34,6 @@ export default class SingleGrid extends Component {
     return (
       <div
         id={`grid-${row}-${col}`}
-        className="grid"
         onMouseDown={() => onMouseDown(row, col)}
         onMouseEnter={() => onMouseEnter(row, col)}
         onMouseUp={() => onMouseUp()}
@@ -41,7 +41,9 @@ export default class SingleGrid extends Component {
           // flex: 1,
           color: "#222222",
           border:
-            isWall || isStart || isGoal ? "" : "1px solid rgb(130, 130, 130)",
+            isPlanned || isWall || isStart || isGoal
+              ? ""
+              : "1px solid rgb(130, 130, 130)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -53,7 +55,7 @@ export default class SingleGrid extends Component {
           verticalAlign: "middle",
         }}
       >
-        <InlineMath math={content} />
+        {isPlanned ? "" : <InlineMath math={content} />}
       </div>
     );
   }
