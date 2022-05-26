@@ -37,13 +37,13 @@ function AppAppBar() {
               href="https://Stevenlyt.github.io"
               sx={{ ...rightLink }}
             >
-              {"More about MAPF"}
+              {"More MAPF"}
             </Link>
             <Link
               color="inherit"
               variant="h6"
               underline="none"
-              href="https://github.com/Stevenlyt/MAPF-Visualizer"
+              href="http://mapf.info"
               sx={rightLink}
             >
               <GitHubIcon />

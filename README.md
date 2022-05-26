@@ -1,70 +1,55 @@
-# Getting Started with Create React App
+[![MIT License][license-shield]][license-url]
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+<img src='./src/asset/mapf-demo.gif' width="200" height="200"/>
 
-## Available Scripts
+  <h3 align="center">MAPF Visualizer</h3>
 
-In the project directory, you can run:
+  <p align="center">
+    A visualization tool for multi-agent path finding algorithms
+    <br />
+</div>
 
-### `npm start`
+## About The Project
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This project provides a visualization tool for Multi-Agent Path Finding (MAPF) algorithms.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+There have been tons of single agent path finding visualization websites, yet they all make use of well-established algorithms such as A star and Dijkstra. the field of multi agent path finding is relatively new (CBS, an important MAPF algorithm, was proposed in 2012).
 
-### `npm test`
+### Built With
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 
-### `npm run build`
+- [React.js](https://reactjs.org/)
+- [Express.js](https://expressjs.com)
+- [MUI](https://mui.com)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+<!-- GETTING STARTED -->
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Getting Started
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Open [MAPF Visualizer](http://mapf-visualizer) in Chrome v98 and later for optimal support.
 
-### `npm run eject`
+## Contributing
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+If you have a MAPF-related algorithm that might fit into the framework of this website, please reach out to me via [email](yli81711@usc.edu) and I'll be very willing to incorporate it into the website.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## More to implement
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- Add pages for more detailed information about MAPF algorithms and corresponding papers.
+- Include more MAPF algorithms (CSB-based, SAT-based, etc.) for users to choose which one to run their MAPF instance on.
+- Include some other MAPF variants, such as k-robust and lifelong NAPF.
+- ...
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## License
 
-## Learn More
+Distributed under the MIT License. See `LICENSE` for more information.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Contact
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+For more information about me, please visit my [personal website](https://yutongli.me).
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+[license-shield]: https://img.shields.io/github/license/stevenlyt/mapf-visualizer?label=license&style=for-the-badge
+[license-url]: https://github.com/stevenlyt/mapf-visualizer/blob/master/LICENSE
