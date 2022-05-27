@@ -34,7 +34,7 @@ function AppAppBar() {
             <Link
               variant="h6"
               underline="none"
-              href="http://mapf.inf"
+              href="http://mapf.info"
               sx={{ ...rightLink }}
             >
               {"More MAPF"}
