@@ -33,7 +33,7 @@ export default function Home() {
       <HomeLayout
         sxBackground={{
           backgroundImage: `url(${backgroundImage})`,
-          backgroundColor: "#7fc7d9", // Average color of the background image.
+          backgroundColor: "#f", // Average color of the background image.
           backgroundPosition: "center",
         }}
       >

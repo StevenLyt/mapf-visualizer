@@ -9,21 +9,21 @@ const rawTheme = createTheme({
       dark: "#1e1e1f",
     },
     secondary: {
-      light: "#834bff",
-      main: "#651fff",
-      dark: "#4615b2",
+      light: "#fff5f8",
+      main: "#ff3366",
+      dark: "#e62958",
     },
     warning: {
       main: "#ffc071",
       dark: "#ffb25e",
     },
     error: {
-      light: red[500],
+      light: red[50],
       main: red[500],
       dark: red[700],
     },
     success: {
-      light: green[500],
+      light: green[50],
       main: green[500],
       dark: green[700],
     },
@@ -94,7 +94,6 @@ const theme = {
       ...rawTheme.typography.h6,
       ...fontHeader,
       fontSize: 18,
-      fontFamily: "Mulish",
     },
     subtitle1: {
       ...rawTheme.typography.subtitle1,
