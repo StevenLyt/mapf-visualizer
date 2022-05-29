@@ -16,18 +16,44 @@
 
 This project provides a visualization tool for Multi-Agent Path Finding (MAPF) algorithms.
 
-There have been tons of single agent path finding visualization websites, yet they all make use of well-established algorithms such as A star and Dijkstra. However, the field of multi agent path finding is relatively new (CBS, an important MAPF algorithm, was proposed in 2012) and thus didn't gain as much public attention. 
+There have been tons of single agent path finding visualization websites, yet they all make use of well-established algorithms such as A star and Dijkstra. However, the field of multi agent path finding is relatively new (CBS, an important MAPF algorithm, was proposed in 2012) and thus didn't gain as much public attention.
 
 This website aims at helping people better understand MAPF by offering a real-time visualization tool. Usually running a MAPF solver involves the following steps:
-1. compile the C++ code into executables 
+
+1. compile the C++ code into executables
 2. put the map and instance into two separate files with contents formatted in terms of certain rules
 3. run the executable with a complicated command
-   
+
 This website offers a much more intuitive experience. Users will be able to:
+
 1. select a particular algorithm they are interested in
 2. design their own map by dragging their mouse to add walls
 3. adding agents by entering their start and goal location
 4. press the `plan` button and get the animated planning result instantly
+
+### Currently supported MAPF variants and algorithms
+
+#### 1. Classic single-point MAPF
+
+- CBSH2-RTC by Jiaoyang Li. 
+  This solver consists of Conflict-Based Search (CBS) and many of its improvement techniques, including:
+  - Prioritizing conflicts
+  - Bypassing conflicts
+  - High-level admissible heuristics:
+    - CG
+    - DG
+    - WDG
+  - Symmetry reasoning techniques:
+    - rectangle reasoning and generalized rectangle reasoning
+    - target reasoning
+    - corridor reasoning and corridor-target reasoning
+    - mutex propagation
+  - Disjoint splitting
+
+#### 2. Large agent MAPF
+
+- Multi-Constraint CBS (MC-CBS) by Jiaoyang Li
+- Multi-Constraint CBS with Mutex propagation (MC-CBS-M) by Han Zhang, Yutong Li, and Jiaoyang Li
 
 ### Built With
 
@@ -41,7 +67,12 @@ This project is bootstrapped with the following frameworks and libraries:
 
 ## Getting Started
 
-Open [MAPF Visualizer](http://mapf-visualizer.com) in Chrome v98 and later for optimal support.
+Open [MAPF Visualizer](http://mapf-visualizer.com) in one of the following browsers for optimal support:
+
+- Chrome v98 and later
+- FIrefox v94 or later
+- Edge v98 or later
+- Safari v15.4 or later (**Note: this requires that you have updated to Mac OS Monterey 12.4, which most people haven't.**)
 
 ## Contributing
 

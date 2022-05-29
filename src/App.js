@@ -1,9 +1,9 @@
 import "./App.css";
 import * as React from "react";
 import LAMAPFVisualizer from "./LAMAPFVisualizer";
+import MAPFVisualizer from "./MAPFVisualizer";
 import AppAppBar from "./AppAppBar";
 import Home from "./Home";
-import AppFooter from "./AppFooter";
 import withRoot from "./withRoot";
 
 import "bootstrap";
@@ -14,6 +14,8 @@ function App(props) {
   var body;
   if (props.page === "la") {
     body = <LAMAPFVisualizer />;
+  } else if (props.page === "classic") {
+    body = <MAPFVisualizer />;
   } else {
     body = <Home />;
   }

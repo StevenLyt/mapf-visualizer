@@ -25,7 +25,6 @@ export default class SingleGrid extends Component {
       onMouseEnter,
       onMouseUp,
     } = this.props;
-    console.log(width + " " + height);
     var gridColor = isWall ? "#626262" : color;
     const content =
       (isStart ? "S_" : "") +
@@ -38,7 +37,6 @@ export default class SingleGrid extends Component {
         onMouseEnter={() => onMouseEnter(row, col)}
         onMouseUp={() => onMouseUp()}
         style={{
-          // flex: 1,
           color: "#222222",
           border:
             isPlanned || isWall || isStart || isGoal

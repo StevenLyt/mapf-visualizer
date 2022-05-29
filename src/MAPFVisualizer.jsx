@@ -4,7 +4,6 @@ import SingleGrid from "./Grid";
 import SendIcon from "@mui/icons-material/Send";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import Typography from "@mui/material/Typography";
 import Skeleton from "@mui/material/Skeleton";
 import Divider from "@mui/material/Divider";
 import Chip from "@mui/material/Chip";
@@ -12,7 +11,6 @@ import { FormHelperText } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
-import LoadingAnimation from "./LoadingAnimation";
 import PlanningResult from "./PlanningResult";
 import MenuItem from "@mui/material/MenuItem";
 import Avatar from "@mui/material/Avatar";
@@ -29,20 +27,22 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
-
+import LoadingAnimation from "./LoadingAnimation";
 import randomColor from "randomcolor";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormGroup from "@mui/material/FormGroup";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormLabel from "@mui/material/FormLabel";
+// import "./visualizer.css";
 
-import "./visualizer.css";
-import { ThirtyFpsSharp } from "@mui/icons-material";
-
-class LAMAPFVisualizer extends Component {
+class MAPFVisualizer extends Component {
   constructor(props) {
     super(props);
     this.state = {
       numRow: 10,
       numCol: 15,
-      algorithms: ["MC-CBS", "MC-CBS-M"],
-      algorithm: 0,
       speed: "median",
       delays: { slow: 17, median: 7, fast: 3 },
       map: new Array(10).fill().map(() =>
@@ -60,9 +60,6 @@ class LAMAPFVisualizer extends Component {
       addedSCol: null,
       addedGRow: null,
       addedGCol: null,
-      addedHeight: null,
-      addedWidth: null,
-      displayedAgent: null,
       snackbarOpen: false,
       isError: false,
       gridSideLength: null,
@@ -75,6 +72,21 @@ class LAMAPFVisualizer extends Component {
       planningStatus: "",
       paths: [],
       isDialogOpen: false,
+      isAlgDialogOpen: false,
+
+      heuristics: ["Zero", "CG", "DG", "WDG"],
+      rectangleReasoning: ["None", "R", "RM", "GR", "Disjoint"],
+      corridorReasoning: ["None", "C", "PC", "STC", "GC", "Disjoint"],
+      whichHeuristic: 3,
+      whichRectangle: 3,
+      whichCorridor: 4,
+      isBypass: true,
+      isPrioritizeConflict: true,
+      isDisjointSplitting: false,
+      isMutex: false,
+      isTarget: true,
+      isSIPP: false,
+      algorithmSummary: "",
     };
   }
 
@@ -98,11 +110,6 @@ class LAMAPFVisualizer extends Component {
       document.getElementById("map-container").clientHeight / this.state.numRow;
     var gridWidth =
       document.getElementById("map-container").clientWidth / this.state.numCol;
-    console.log(
-      document.getElementById("map-container").clientWidth / this.state.numCol +
-        " " +
-        this.state.numCol
-    );
 
     this.setState({
       gridSideLength: Math.floor(Math.min(gridHeight, gridWidth)),
@@ -143,62 +150,21 @@ class LAMAPFVisualizer extends Component {
 
     // change agents to border
     this.state.agents.forEach((agent) => {
-      var height = agent.height;
-      var width = agent.width;
       var color = agent.color;
-      for (let i = agent.SR; i < agent.SR + height; i++) {
-        for (let j = agent.SC; j < agent.SC + width; j++) {
-          document.getElementById(`grid-${i}-${j}`).style.backgroundColor =
-            "#fff";
-          if (i === agent.SR) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderTop = `4px solid ${color}`;
-          }
-          if (i === agent.SR + height - 1) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderBottom = `4px solid ${color}`;
-          }
-          if (j === agent.SC) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderLeft = `4px solid ${color}`;
-          }
-          if (j === agent.SC + width - 1) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderRight = `4px solid ${color}`;
-          }
-        }
-      }
-      for (let i = agent.GR; i < agent.GR + height; i++) {
-        for (let j = agent.GC; j < agent.GC + width; j++) {
-          document.getElementById(`grid-${i}-${j}`).style.backgroundColor =
-            "#fff";
-          if (i === agent.GR) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderTop = `4px solid ${color}`;
-          }
-          if (i === agent.GR + height - 1) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderBottom = `4px solid ${color}`;
-          }
-          if (j === agent.GC) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderLeft = `4px solid ${color}`;
-          }
-          if (j === agent.GC + width - 1) {
-            document.getElementById(
-              `grid-${i}-${j}`
-            ).style.borderRight = `4px solid ${color}`;
-          }
-        }
-      }
+      document.getElementById(
+        `grid-${agent.SR}-${agent.SC}`
+      ).style.backgroundColor = "#fff";
+      document.getElementById(
+        `grid-${agent.SR}-${agent.SC}`
+      ).style.border = `4px solid ${color}`;
+      document.getElementById(
+        `grid-${agent.GR}-${agent.GC}`
+      ).style.backgroundColor = "#fff";
+      document.getElementById(
+        `grid-${agent.GR}-${agent.GC}`
+      ).style.border = `4px solid ${color}`;
     });
+
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     var walls = [];
@@ -214,8 +180,6 @@ class LAMAPFVisualizer extends Component {
       agents.push({
         startLoc: this.linearizeLocation(agent.SR, agent.SC),
         goalLoc: this.linearizeLocation(agent.GR, agent.GC),
-        height: agent.height,
-        width: agent.width,
       });
     });
 
@@ -230,60 +194,57 @@ class LAMAPFVisualizer extends Component {
         col: this.state.numCol,
         walls: walls,
         agents: agents,
-        isMutex: this.state.algorithm === 1,
+        heuristic: this.state.heuristics[this.state.whichHeuristic],
+        rectangle: this.state.rectangleReasoning[this.state.whichRectangle],
+        corridor: this.state.corridorReasoning[this.state.whichCorridor],
+        isBypass: this.state.isBypass,
+        isPrioritizeConflict: this.state.isPrioritizeConflict,
+        isDisjointSplitting: this.state.isDisjointSplitting,
+        isMutex: this.state.isMutex,
+        isTarget: this.state.isTarget,
+        isSIPP: this.state.isSIPP,
       }),
     };
 
-    fetch("http://34.125.119.104:8080/LA-MAPF", req)
+    fetch("http://34.125.119.104:8080/MAPF", req)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
           isPlanning: false,
           isPlanned: true,
+          algorithmSummary: data.algorithm,
           planningTime: data.time,
           planningStatus: data.status,
           paths: data.paths,
         });
         if (data.status === "Optimal") {
-          var newMap = structuredClone(this.state.map);
           data.paths.forEach((path, agentId) => {
             var color = this.state.agents[agentId].color;
-            var height = this.state.agents[agentId].height;
-            var width = this.state.agents[agentId].width;
+            var height = 1;
+            var width = 1;
             for (let t = 0; t < path.length; t++) {
               var l = this.decodeLocation(parseInt(path[t]));
-              var SR = l.r;
-              var SC = l.c;
-              for (let i = SR; i < SR + height; i++) {
-                for (let j = SC; j < SC + width; j++) {
-                  setTimeout(() => {
-                    document.getElementById(
-                      `grid-${i}-${j}`
-                    ).style.backgroundColor = color;
-                    document.getElementById(`grid-${i}-${j}`).style.border = "";
-                  }, 1000 * t);
-                  if (t < path.length - 1) {
-                    setTimeout(() => {
-                      document.getElementById(
-                        `grid-${i}-${j}`
-                      ).style.backgroundColor = "#ffffff";
-                      // document.getElementById(`grid-${i}-${j}`).style.border =
-                      //   "1px solid rgb(130, 130, 130)";
-                    }, 1000 * (t + 0.999));
-                  }
-                }
+              let i = l.r;
+              let j = l.c;
+              setTimeout(() => {
+                document.getElementById(
+                  `grid-${i}-${j}`
+                ).style.backgroundColor = color;
+                document.getElementById(`grid-${i}-${j}`).style.border = "";
+              }, 1000 * t);
+              if (t < path.length - 1) {
+                setTimeout(() => {
+                  document.getElementById(
+                    `grid-${i}-${j}`
+                  ).style.backgroundColor = "#ffffff";
+                }, 1000 * (t + 0.999));
               }
             }
           });
-          this.setState({ map: newMap });
         } else if (data.status === "No solutions") {
         } else if (data.status === "Timeout") {
         }
       });
-  }
-
-  handleChangeAlg(e) {
-    this.setState({ algorithm: e.target.value });
   }
 
   handleEnterRow(e) {
@@ -337,8 +298,6 @@ class LAMAPFVisualizer extends Component {
           SC: this.state.addedSCol,
           GR: this.state.addedGRow,
           GC: this.state.addedGCol,
-          height: this.state.addedHeight,
-          width: this.state.addedWidth,
           color: color,
         },
       ],
@@ -361,44 +320,27 @@ class LAMAPFVisualizer extends Component {
   addAgentToMap() {
     const color = randomColor();
     var newMap = structuredClone(this.state.map);
-    for (
-      let i = this.state.addedSRow;
-      i < this.state.addedSRow + this.state.addedHeight;
-      i++
-    ) {
-      for (
-        let j = this.state.addedSCol;
-        j < this.state.addedSCol + this.state.addedWidth;
-        j++
-      ) {
-        if (newMap[i][j].agent !== -1 || newMap[i][j].isWall) {
-          this.setState({ isError: true }, () => this.showSnackbar(color));
-          return;
-        }
-        newMap[i][j].agent = this.state.numAgents + 1;
-        newMap[i][j].isStart = true;
-        newMap[i][j].color = color;
-      }
+    var i = this.state.addedSRow;
+    var j = this.state.addedSCol;
+
+    if (newMap[i][j].agent !== -1 || newMap[i][j].isWall) {
+      this.setState({ isError: true }, () => this.showSnackbar(color));
+      return;
     }
-    for (
-      let i = this.state.addedGRow;
-      i < this.state.addedGRow + this.state.addedHeight;
-      i++
-    ) {
-      for (
-        let j = this.state.addedGCol;
-        j < this.state.addedGCol + this.state.addedWidth;
-        j++
-      ) {
-        if (newMap[i][j].agent !== -1 || newMap[i][j].isWall) {
-          this.setState({ isError: true }, () => this.showSnackbar(color));
-          return;
-        }
-        newMap[i][j].agent = this.state.numAgents + 1;
-        newMap[i][j].isGoal = true;
-        newMap[i][j].color = color;
-      }
+    newMap[i][j].agent = this.state.numAgents + 1;
+    newMap[i][j].isStart = true;
+    newMap[i][j].color = color;
+
+    i = this.state.addedGRow;
+    j = this.state.addedGCol;
+    if (newMap[i][j].agent !== -1 || newMap[i][j].isWall) {
+      this.setState({ isError: true }, () => this.showSnackbar(color));
+      return;
     }
+    newMap[i][j].agent = this.state.numAgents + 1;
+    newMap[i][j].isGoal = true;
+    newMap[i][j].color = color;
+
     this.setState({ map: newMap }, () => this.showSnackbar(color));
   }
 
@@ -408,8 +350,6 @@ class LAMAPFVisualizer extends Component {
       addedSCol: null,
       addedGRow: null,
       addedGCol: null,
-      addedHeight: null,
-      addedWidth: null,
     });
   }
 
@@ -428,7 +368,6 @@ class LAMAPFVisualizer extends Component {
   }
 
   updateWall(row, col) {
-    // ?ischanged
     if (
       this.state.map[row][col].agent === -1 &&
       !this.state.isPlanning &&
@@ -456,9 +395,6 @@ class LAMAPFVisualizer extends Component {
         addedSCol: null,
         addedGRow: null,
         addedGCol: null,
-        addedHeight: null,
-        addedWidth: null,
-        displayedAgent: null,
         snackbarOpen: false,
         isError: false,
         isMousePressed: false,
@@ -467,6 +403,16 @@ class LAMAPFVisualizer extends Component {
         planningTime: -1,
         planningStatus: "",
         paths: [],
+        whichHeuristic: 3,
+        whichRectangle: 3,
+        whichCorridor: 4,
+        isBypass: true,
+        isPrioritizeConflict: true,
+        isDisjointSplitting: false,
+        isMutex: false,
+        isTarget: true,
+        isSIPP: false,
+        algorithmSummary: "",
       },
       () => this.resizeGrid()
     );
@@ -474,24 +420,16 @@ class LAMAPFVisualizer extends Component {
 
   checkRowOOR() {
     return (
-      this.state.addedSRow + this.state.addedHeight > this.state.numRow ||
-      this.state.addedGRow + this.state.addedHeight > this.state.numRow ||
-      (this.state.addedHeight && this.state.addedHeight <= 0)
+      this.state.addedSRow + 1 > this.state.numRow ||
+      this.state.addedGRow + 1 > this.state.numRow
     );
   }
 
   checkColOOR() {
     return (
-      this.state.addedSCol + this.state.addedWidth > this.state.numCol ||
-      this.state.addedGCol + this.state.addedWidth > this.state.numCol ||
-      (this.state.addedWidth && this.state.addedWidth <= 0)
+      this.state.addedSCol + 1 > this.state.numCol ||
+      this.state.addedGCol + 1 > this.state.numCol
     );
-  }
-
-  displayAgentDetail(e, expanded, panel) {
-    this.setState({
-      displayedAgent: expanded ? panel : null,
-    });
   }
 
   render() {
@@ -591,7 +529,7 @@ class LAMAPFVisualizer extends Component {
             <LoadingAnimation />
           ) : this.state.isPlanned ? (
             <PlanningResult
-              algorithm={this.state.algorithms[1]}
+              algorithm={this.state.algorithmSummary}
               status={this.state.planningStatus}
               planningTime={this.state.planningTime}
               paths={this.state.paths}
@@ -620,26 +558,282 @@ class LAMAPFVisualizer extends Component {
                 >
                   <Chip label="Algorithm" variant="outlined" color="warning" />
                 </Divider>
-                <FormControl fullWidth style={{ marginTop: "3%" }}>
-                  <InputLabel id="demo-simple-select-label" color="warning">
-                    Mutex propagation?
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Mutex propagation?"
-                    color="warning"
-                    onChange={(e) => {
-                      this.setState({ algorithm: e.target.value });
-                    }}
-                  >
-                    {this.state.algorithms.map((a, id) => (
-                      <MenuItem key={id} value={id}>
-                        {a}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    this.setState({ isAlgDialogOpen: true });
+                  }}
+                  fullWidth
+                  sx={{ mt: "3%" }}
+                  color="warning"
+                >
+                  Choose reasoning techniques
+                </Button>
+                <Dialog
+                  // fullWidth={fullWidth}
+                  // maxWidth={maxWidth}
+                  open={this.state.isAlgDialogOpen}
+                  onClose={() => {
+                    this.setState({ isAlgDialogOpen: false });
+                  }}
+                >
+                  <DialogTitle sx={{ textAlign: "center" }}>
+                    CBS improvement techniques
+                  </DialogTitle>
+                  <DialogContent>
+                    <Box
+                      noValidate
+                      component="form"
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        m: "auto",
+                        width: "fit-content",
+                      }}
+                    >
+                      <FormControl>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          High level heuristics
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.whichHeuristic}
+                          onChange={(e) =>
+                            this.setState({ whichHeuristic: e.target.value })
+                          }
+                        >
+                          {this.state.heuristics.map((heuristic, id) => {
+                            return (
+                              <FormControlLabel
+                                key={id}
+                                value={id}
+                                control={<Radio />}
+                                label={heuristic}
+                              />
+                            );
+                          })}
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          Rectangle reasoning
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.whichRectangle}
+                          onChange={(e) =>
+                            this.setState({ whichRectangle: e.target.value })
+                          }
+                        >
+                          {this.state.rectangleReasoning.map((a, id) => {
+                            return (
+                              <FormControlLabel
+                                key={id}
+                                value={id}
+                                control={<Radio />}
+                                label={a}
+                              />
+                            );
+                          })}
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          Corridor Reasoning
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.whichCorridor}
+                          onChange={(e) =>
+                            this.setState({ whichCorridor: e.target.value })
+                          }
+                        >
+                          {this.state.corridorReasoning.map((a, id) => {
+                            return (
+                              <FormControlLabel
+                                key={id}
+                                value={id}
+                                control={<Radio />}
+                                label={a}
+                              />
+                            );
+                          })}
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          Prioritize conflict
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.isPrioritizeConflict}
+                          onChange={(e) =>
+                            this.setState({
+                              isPrioritizeConflict: e.target.value,
+                            })
+                          }
+                        >
+                          <FormControlLabel
+                            key={1}
+                            value={true}
+                            control={<Radio />}
+                            label="True"
+                          />
+                          <FormControlLabel
+                            key={0}
+                            value={false}
+                            control={<Radio />}
+                            label="False"
+                          />
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          Bypass conflict
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.isBypass}
+                          onChange={(e) =>
+                            this.setState({
+                              isBypass: e.target.value,
+                            })
+                          }
+                        >
+                          <FormControlLabel
+                            key={1}
+                            value={true}
+                            control={<Radio />}
+                            label="True"
+                          />
+                          <FormControlLabel
+                            key={0}
+                            value={false}
+                            control={<Radio />}
+                            label="False"
+                          />
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          Mutex Propagation
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.isMutex}
+                          onChange={(e) =>
+                            this.setState({
+                              isMutex: e.target.value,
+                            })
+                          }
+                        >
+                          <FormControlLabel
+                            key={1}
+                            value={true}
+                            control={<Radio />}
+                            label="True"
+                          />
+                          <FormControlLabel
+                            key={0}
+                            value={false}
+                            control={<Radio />}
+                            label="False"
+                          />
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          Target reasoning
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.isTarget}
+                          onChange={(e) =>
+                            this.setState({
+                              isTarget: e.target.value,
+                            })
+                          }
+                        >
+                          <FormControlLabel
+                            key={1}
+                            value={true}
+                            control={<Radio />}
+                            label="True"
+                          />
+                          <FormControlLabel
+                            key={0}
+                            value={false}
+                            control={<Radio />}
+                            label="False"
+                          />
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          Disjoint splitting
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.isDisjointSplitting}
+                          onChange={(e) =>
+                            this.setState({
+                              isDisjointSplitting: e.target.value,
+                            })
+                          }
+                        >
+                          <FormControlLabel
+                            key={1}
+                            value={true}
+                            control={<Radio />}
+                            label="True"
+                          />
+                          <FormControlLabel
+                            key={0}
+                            value={false}
+                            control={<Radio />}
+                            label="False"
+                          />
+                        </RadioGroup>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                          SIPP
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-controlled-radio-buttons-group"
+                          name="controlled-radio-buttons-group"
+                          value={this.state.isSIPP}
+                          onChange={(e) =>
+                            this.setState({
+                              isSIPP: e.target.value,
+                            })
+                          }
+                        >
+                          <FormControlLabel
+                            key={1}
+                            value={true}
+                            control={<Radio />}
+                            label="True"
+                          />
+                          <FormControlLabel
+                            key={0}
+                            value={false}
+                            control={<Radio />}
+                            label="False"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+                    </Box>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={() => this.setState({ isAlgDialogOpen: false })}
+                    >
+                      Set
+                    </Button>
+                  </DialogActions>
+                </Dialog>
 
                 <Divider
                   sx={{
@@ -758,9 +952,6 @@ class LAMAPFVisualizer extends Component {
                       onChange={(e) => {
                         this.setState({ addedGRow: parseInt(e.target.value) });
                       }}
-                      // onBlur={(e) => {
-                      //   agentRow = e.target.value;
-                      // }}
                       error={
                         this.state.addedGRow >= this.state.numRow ||
                         this.state.addedGRow < 0
@@ -803,49 +994,9 @@ class LAMAPFVisualizer extends Component {
                       }
                     />
                   </div>
-                  <div>
-                    <TextField
-                      required
-                      id="add-height"
-                      label="Height"
-                      color="secondary"
-                      type="number"
-                      sx={{ mr: 1 }}
-                      onChange={(e) => {
-                        this.setState({
-                          addedHeight: parseInt(e.target.value),
-                        });
-                      }}
-                      // onBlur={(e) => this.handleOutOfRangeRow(e)}
-                      error={this.checkRowOOR()}
-                      value={
-                        this.state.addedHeight ? this.state.addedHeight : ""
-                      }
-                      helperText={
-                        this.checkRowOOR() ? "agent height out of range" : " "
-                      }
-                    />
-                    <TextField
-                      required
-                      id="add-width"
-                      label="Width"
-                      color="secondary"
-                      type="number"
-                      onChange={(e) => {
-                        this.setState({ addedWidth: parseInt(e.target.value) });
-                      }}
-                      // onBlur={(e) => this.handleOutOfRangeCol(e)}
-                      error={this.checkColOOR()}
-                      value={this.state.addedWidth ? this.state.addedWidth : ""}
-                      helperText={
-                        this.checkColOOR() ? "agent width out of range" : " "
-                      }
-                    />
-                  </div>
 
                   <Button
                     variant="contained"
-                    color="secondary"
                     type="submit"
                     startIcon={<AddIcon />}
                     sx={{ width: "100%", bgcolor: "secondary.light" }}
@@ -889,33 +1040,6 @@ class LAMAPFVisualizer extends Component {
                         label={`agent ${agentId + 1}`}
                         onDelete={(e) => this.handleDeleteAgent(e)}
                       ></Chip>
-                      //   <Accordion
-                      //     key={agentId}
-                      //     expanded={this.state.displayedAgent === "panel" + agentId}
-                      //     onChange={(e, expanded) =>
-                      //       this.displayAgentDetail(e, expanded, "panel" + agentId)
-                      //     }
-                      //     sx={{
-                      //       backgroundColor: agent.color,
-                      //       width: "60%",
-                      //     }}
-                      //   >
-                      //     <AccordionSummary
-                      //       expandIcon={<ExpandMoreIcon />}
-                      //       aria-controls="panel1bh-content"
-                      //       id="panel1bh-header"
-                      //     >
-                      //       <Typography sx={{ width: "33%", flexShrink: 0 }}>
-                      //         Agent {agentId + 1}
-                      //       </Typography>
-                      //       {/* <Typography sx={{ color: "text.secondary" }}>
-                      //   I am an accordion
-                      // </Typography> */}
-                      //     </AccordionSummary>
-                      //     <AccordionDetails>
-                      //       <Typography>{`Height: ${agent.height} Width: ${agent.width}\n(${agent.SR},${agent.SC}) -> (${agent.GR},${agent.GC})`}</Typography>
-                      //     </AccordionDetails>
-                      //   </Accordion>
                     );
                   })}
                 </div>
@@ -933,6 +1057,7 @@ class LAMAPFVisualizer extends Component {
                   Plan!
                 </Button>
               </div>
+              <div></div>
             </div>
           )}
         </div>
@@ -940,4 +1065,4 @@ class LAMAPFVisualizer extends Component {
     );
   }
 }
-export default LAMAPFVisualizer;
+export default MAPFVisualizer;

@@ -4,7 +4,6 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LAMAPFVisualizer from "./LAMAPFVisualizer";
 import AppAppBar from "./AppAppBar";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -13,6 +12,7 @@ root.render(
     <Routes>
       <Route path="/" element={<App />} />
       <Route path="la-visualizer" element={<App page="la" />} />
+      <Route path="classic-visualizer" element={<App page="classic" />} />
     </Routes>
   </BrowserRouter>
 );

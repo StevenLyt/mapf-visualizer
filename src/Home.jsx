@@ -33,7 +33,7 @@ export default function Home() {
       <HomeLayout
         sxBackground={{
           backgroundImage: `url(${backgroundImage})`,
-          backgroundColor: "#f", // Average color of the background image.
+          backgroundColor: "#7fc7d9", // Average color of the background image.
           backgroundPosition: "center",
         }}
       >
@@ -89,7 +89,7 @@ export default function Home() {
       </HomeLayout>
       <Box
         component="section"
-        sx={{ display: "flex", bgcolor: "#eee", overflow: "hidden" }}
+        sx={{ display: "flex", bgcolor: "secondary", overflow: "hidden" }}
       >
         <Container
           sx={{
@@ -160,7 +160,7 @@ export default function Home() {
 
       <Box
         component="section"
-        sx={{ display: "flex", bgcolor: "primary.light", overflow: "hidden" }}
+        sx={{ display: "flex", bgcolor: "#fff5f8", overflow: "hidden" }}
       >
         <Container
           sx={{
@@ -174,7 +174,6 @@ export default function Home() {
         >
           <Box
             component="img"
-            src="/static/themes/onepirate/productCurvyLines.png"
             alt="curvy lines"
             sx={{
               pointerEvents: "none",
@@ -204,6 +203,7 @@ export default function Home() {
                     color="secondary"
                     size="medium"
                     variant="contained"
+                    href='/classic-visualizer'
                     component="a"
                     sx={{ mt: 8 }}
                   >
@@ -234,6 +234,9 @@ export default function Home() {
                   <Box sx={number}>3.</Box>
                   <Typography variant="h5" align="center">
                     Robust MAPF
+                  </Typography>
+                  <Typography variant="h5" align="center">
+                    (To be implemented)
                   </Typography>
                   <Button
                     color="secondary"

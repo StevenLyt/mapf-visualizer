@@ -3,27 +3,51 @@ import { green, grey, red } from "@mui/material/colors";
 
 const rawTheme = createTheme({
   palette: {
+    // primary: {
+    //   light: "#69696a",
+    //   main: "#28282a",
+    //   dark: "#1e1e1f",
+    // },
+    // secondary: {
+    //   light: "#fff5f8",
+    //   main: "#ff3366",
+    //   dark: "#e62958",
+    // },
+    // warning: {
+    //   main: "#ffc071",
+    //   dark: "#ffb25e",
+    // },
+    // error: {
+    //   light: red[50],
+    //   main: red[500],
+    //   dark: red[700],
+    // },
+    // success: {
+    //   light: green[50],
+    //   main: green[500],
+    //   dark: green[700],
+    // },
     primary: {
       light: "#69696a",
       main: "#28282a",
       dark: "#1e1e1f",
     },
     secondary: {
-      light: "#fff5f8",
-      main: "#ff3366",
-      dark: "#e62958",
+      light: "#834bff",
+      main: "#651fff",
+      dark: "#4615b2",
     },
     warning: {
-      main: "#ffc071",
+      main: "#ffb25e",
       dark: "#ffb25e",
     },
     error: {
-      light: red[50],
+      light: red[500],
       main: red[500],
       dark: red[700],
     },
     success: {
-      light: green[50],
+      light: green[500],
       main: green[500],
       dark: green[700],
     },
