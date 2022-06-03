@@ -1,52 +1,45 @@
 import React, { Component } from "react";
-import Button from "@mui/material/Button";
-import SingleGrid from "./Grid";
 import SendIcon from "@mui/icons-material/Send";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import Skeleton from "@mui/material/Skeleton";
-import Divider from "@mui/material/Divider";
-import Chip from "@mui/material/Chip";
-import { FormHelperText } from "@mui/material";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import FormControl from "@mui/material/FormControl";
-import PlanningResult from "./PlanningResult";
-import MenuItem from "@mui/material/MenuItem";
-import Avatar from "@mui/material/Avatar";
-import Stack from "@mui/material/Stack";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 import AddIcon from "@mui/icons-material/Add";
-import Dialog from "@mui/material/Dialog";
-import Box from "@mui/material/Box";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import Accordion from "@mui/material/Accordion";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
-import LoadingAnimation from "./LoadingAnimation";
+import SingleGrid from "components/Grid";
+import LoadingAnimation from "components/LoadingAnimation";
+import PlanningResult from "components/PlanningResult";
+import BaseLayout from "layouts/sections/components/BaseLayout";
+import {
+  Alert,
+  Slide,
+  Modal,
+  Grid,
+  Switch,
+  Divider,
+  Container,
+  TextField,
+  Snackbar,
+  FormLabel,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
+import MKTypography from "components/MKTypography";
+import MKBox from "components/MKBox";
+import MKInput from "components/MKInput";
+import MKButton from "components/MKButton";
+
 import randomColor from "randomcolor";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormGroup from "@mui/material/FormGroup";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormLabel from "@mui/material/FormLabel";
-// import "./visualizer.css";
+
+const DEFAULTROW = 8;
+const DEFAULTCOL = 15;
 
 class MAPFVisualizer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      numRow: 10,
-      numCol: 15,
-      speed: "median",
-      delays: { slow: 17, median: 7, fast: 3 },
-      map: new Array(10).fill().map(() =>
-        new Array(15).fill().map((u) => ({
+      numRow: DEFAULTROW,
+      numCol: DEFAULTCOL,
+      tempRow: DEFAULTROW,
+      tempCol: DEFAULTCOL,
+      map: new Array(DEFAULTROW).fill().map(() =>
+        new Array(DEFAULTCOL).fill().map((u) => ({
           isWall: false,
           isStart: false,
           isGoal: false,
@@ -62,15 +55,14 @@ class MAPFVisualizer extends Component {
       addedGCol: null,
       snackbarOpen: false,
       isError: false,
-      gridSideLength: null,
-      windowHeight: window.innerHeight,
-      windowWidth: window.innerWidth,
       isMousePressed: false,
       isPlanning: false,
       isPlanned: false,
+      isAnimationFinished: false,
       planningTime: -1,
       planningStatus: "",
       paths: [],
+      isInfoDialogOpen: true,
       isDialogOpen: false,
       isAlgDialogOpen: false,
 
@@ -90,31 +82,9 @@ class MAPFVisualizer extends Component {
     };
   }
 
-  updateDimensions = () => {
-    this.setState({
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-    });
-  };
-  componentDidMount() {
-    window.addEventListener("resize", this.resizeGrid());
-    this.resizeGrid();
-  }
+  componentDidMount() {}
 
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.updateDimensions);
-  }
-
-  resizeGrid() {
-    var gridHeight =
-      document.getElementById("map-container").clientHeight / this.state.numRow;
-    var gridWidth =
-      document.getElementById("map-container").clientWidth / this.state.numCol;
-
-    this.setState({
-      gridSideLength: Math.floor(Math.min(gridHeight, gridWidth)),
-    });
-  }
+  componentWillUnmount() {}
 
   linearizeLocation(r, c) {
     return this.state.numCol * r + c;
@@ -151,18 +121,10 @@ class MAPFVisualizer extends Component {
     // change agents to border
     this.state.agents.forEach((agent) => {
       var color = agent.color;
-      document.getElementById(
-        `grid-${agent.SR}-${agent.SC}`
-      ).style.backgroundColor = "#fff";
-      document.getElementById(
-        `grid-${agent.SR}-${agent.SC}`
-      ).style.border = `4px solid ${color}`;
-      document.getElementById(
-        `grid-${agent.GR}-${agent.GC}`
-      ).style.backgroundColor = "#fff";
-      document.getElementById(
-        `grid-${agent.GR}-${agent.GC}`
-      ).style.border = `4px solid ${color}`;
+      document.getElementById(`grid-${agent.SR}-${agent.SC}`).style.backgroundColor = "#fff";
+      document.getElementById(`grid-${agent.SR}-${agent.SC}`).style.border = `4px solid ${color}`;
+      document.getElementById(`grid-${agent.GR}-${agent.GC}`).style.backgroundColor = "#fff";
+      document.getElementById(`grid-${agent.GR}-${agent.GC}`).style.border = `4px solid ${color}`;
     });
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -218,75 +180,72 @@ class MAPFVisualizer extends Component {
           paths: data.paths,
         });
         if (data.status === "Optimal") {
+          var finishTime = 0;
           data.paths.forEach((path, agentId) => {
+            finishTime = Math.max(finishTime, path.length);
             var color = this.state.agents[agentId].color;
-            var height = 1;
-            var width = 1;
             for (let t = 0; t < path.length; t++) {
               var l = this.decodeLocation(parseInt(path[t]));
               let i = l.r;
               let j = l.c;
               setTimeout(() => {
-                document.getElementById(
-                  `grid-${i}-${j}`
-                ).style.backgroundColor = color;
+                document.getElementById(`grid-${i}-${j}`).style.backgroundColor = color;
                 document.getElementById(`grid-${i}-${j}`).style.border = "";
               }, 1000 * t);
               if (t < path.length - 1) {
                 setTimeout(() => {
-                  document.getElementById(
-                    `grid-${i}-${j}`
-                  ).style.backgroundColor = "#ffffff";
+                  document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "#ffffff";
                 }, 1000 * (t + 0.999));
               }
             }
           });
+          setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
         } else if (data.status === "No solutions") {
         } else if (data.status === "Timeout") {
         }
       });
   }
 
-  handleEnterRow(e) {
-    this.setState({ numRow: parseInt(e.target.value) });
-  }
-
   changeMapRow(e) {
     let t = parseInt(e.target.value);
-    t = t > 40 ? 40 : t < 4 ? 4 : t;
-    this.setState(
-      {
-        numRow: t,
-        map: this.createEmptyMap(t, this.state.numCol),
-      },
-      () => this.resizeGrid()
-    );
-  }
-
-  handleEnterCol(e) {
-    this.setState({ numCol: parseInt(e.target.value) });
+    t = t > 30 ? 30 : t < 4 ? 4 : t;
+    t = Math.min(t, this.state.numCol);
+    this.setState({
+      tempRow: t,
+      numRow: t,
+      map: this.createEmptyMap(t, this.state.numCol),
+    });
   }
 
   changeMapCol(e) {
     let t = parseInt(e.target.value);
-    t = t > 40 ? 40 : t < 4 ? 4 : t;
-    this.setState(
-      {
-        numCol: t,
-        map: this.createEmptyMap(this.state.numRow, t),
-      },
-      () => this.resizeGrid()
-    );
+    t = t > 30 ? 30 : t < 4 ? 4 : t;
+    t = Math.max(t, this.state.numRow);
+    this.setState({
+      tempCol: t,
+      numCol: t,
+      map: this.createEmptyMap(this.state.numRow, t),
+    });
   }
 
   handleAddAgent(e) {
     e.preventDefault();
+    const error =
+      this.state.addedSRow >= this.state.numRow ||
+      this.state.addedSRow < 0 ||
+      this.state.addedSCol >= this.state.numCol ||
+      this.state.addedSCol < 0 ||
+      this.state.addedGRow >= this.state.numRow ||
+      this.state.addedGRow < 0 ||
+      this.state.addedGCol >= this.state.numCol ||
+      this.state.addedGCol < 0;
+    if (error) return;
     this.addAgentToMap();
-    // this.emptyForm();
   }
-  handleDeleteAgent(e) {
-    console.log("color");
-  }
+
+  // handleDeleteAgent(e) {
+  //   console.log("color");
+  // }
 
   addAgent(color) {
     this.setState({
@@ -308,6 +267,7 @@ class MAPFVisualizer extends Component {
     if (!this.state.isError) this.addAgent(color);
     this.setState({ snackbarOpen: true });
     setTimeout(() => this.setState({ isError: false }), 1200);
+    this.emptyForm();
   }
 
   handleCloseSnackbar(event, reason) {
@@ -322,7 +282,6 @@ class MAPFVisualizer extends Component {
     var newMap = structuredClone(this.state.map);
     var i = this.state.addedSRow;
     var j = this.state.addedSCol;
-
     if (newMap[i][j].agent !== -1 || newMap[i][j].isWall) {
       this.setState({ isError: true }, () => this.showSnackbar(color));
       return;
@@ -368,11 +327,7 @@ class MAPFVisualizer extends Component {
   }
 
   updateWall(row, col) {
-    if (
-      this.state.map[row][col].agent === -1 &&
-      !this.state.isPlanning &&
-      !this.state.isPlanned
-    ) {
+    if (this.state.map[row][col].agent === -1 && !this.state.isPlanning && !this.state.isPlanned) {
       var newMap = this.state.map.slice();
       newMap[row][col] = {
         ...newMap[row][col],
@@ -383,685 +338,685 @@ class MAPFVisualizer extends Component {
   }
 
   startNewTask() {
-    this.setState(
-      {
-        numRow: 10,
-        numCol: 15,
-        isPlanned: false,
-        map: this.createEmptyMap(10, 15),
-        agents: [],
-        numAgents: 0,
-        addedSRow: null,
-        addedSCol: null,
-        addedGRow: null,
-        addedGCol: null,
-        snackbarOpen: false,
-        isError: false,
-        isMousePressed: false,
-        isPlanning: false,
-        isPlanned: false,
-        planningTime: -1,
-        planningStatus: "",
-        paths: [],
-        whichHeuristic: 3,
-        whichRectangle: 3,
-        whichCorridor: 4,
-        isBypass: true,
-        isPrioritizeConflict: true,
-        isDisjointSplitting: false,
-        isMutex: false,
-        isTarget: true,
-        isSIPP: false,
-        algorithmSummary: "",
-      },
-      () => this.resizeGrid()
-    );
+    this.setState({
+      numRow: DEFAULTROW,
+      numCol: DEFAULTCOL,
+      tempRow: DEFAULTROW,
+      tempCol: DEFAULTCOL,
+      map: this.createEmptyMap(DEFAULTROW, DEFAULTCOL),
+      agents: [],
+      numAgents: 0,
+      addedSRow: null,
+      addedSCol: null,
+      addedGRow: null,
+      addedGCol: null,
+      snackbarOpen: false,
+      isError: false,
+      isMousePressed: false,
+      isPlanning: false,
+      isPlanned: false,
+      isAnimationFinished: false,
+      planningTime: -1,
+      planningStatus: "",
+      paths: [],
+      whichHeuristic: 3,
+      whichRectangle: 3,
+      whichCorridor: 4,
+      isBypass: true,
+      isPrioritizeConflict: true,
+      isDisjointSplitting: false,
+      isMutex: false,
+      isTarget: true,
+      isSIPP: false,
+      algorithmSummary: "",
+    });
+    for (let i = 0; i < DEFAULTROW; i++) {
+      for (let j = 0; j < DEFAULTCOL; j++) {
+        document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "";
+        document.getElementById(`grid-${i}-${j}`).style.border = "";
+      }
+    }
   }
 
   checkRowOOR() {
     return (
-      this.state.addedSRow + 1 > this.state.numRow ||
-      this.state.addedGRow + 1 > this.state.numRow
+      this.state.addedSRow + 1 > this.state.numRow || this.state.addedGRow + 1 > this.state.numRow
     );
   }
 
   checkColOOR() {
     return (
-      this.state.addedSCol + 1 > this.state.numCol ||
-      this.state.addedGCol + 1 > this.state.numCol
+      this.state.addedSCol + 1 > this.state.numCol || this.state.addedGCol + 1 > this.state.numCol
     );
   }
 
   render() {
     return (
-      <div
-        className="body"
-        style={{
-          marginTop: "5%",
-          height: this.state.windowHeight * 0.7,
-        }}
-      >
-        <Dialog
-          open={this.state.isDialogOpen}
-          onClose={() => {
-            this.setState({ isDialogOpen: false });
-          }}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">Empty agent list!</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Please add at least one agent before start planning.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                this.setState({ isDialogOpen: false });
-              }}
-              autoFocus
-            >
-              OK
-            </Button>
-          </DialogActions>
-        </Dialog>
+      <BaseLayout title="Classic MAPF">
+        <MKBox component="section">
+          <Modal
+            open={this.state.isInfoDialogOpen}
+            onClose={() => {
+              this.setState({ isInfoDialogOpen: false });
+            }}
+            sx={{ display: "grid", placeItems: "center" }}
+          >
+            <Slide direction="down" in={this.state.isInfoDialogOpen} timeout={500}>
+              <MKBox
+                position="relative"
+                width="50vw"
+                display="flex"
+                flexDirection="column"
+                borderRadius="xl"
+                variant="gradient"
+                shadow="sm"
+              >
+                <MKBox display="flex" alginItems="center" justifyContent="center" p={2}>
+                  <MKTypography variant="h4">A few things to know</MKTypography>
+                </MKBox>
+                <Divider sx={{ my: 0 }} />
 
-        {/* 2d map */}
-        <div
-          id="map-container"
-          style={{
-            display: "inline-block",
-            width: "62%",
-            height: "100%",
-            marginLeft: "3%",
-          }}
-        >
-          <div
-            className="map"
+                <MKBox px={6} py={3} textAlign="left">
+                  <MKTypography variant="body2" mb={1}>
+                    1. For better display of the map, the number of rows are restricted to be no
+                    more that the number of columns. So if you want to add a map with more rows than
+                    columns, simply swap these two numbers.
+                  </MKTypography>
+                  <MKTypography variant="body2" mb={1}>
+                    2. The MAPF variant you choose is <b>classic MAPF</b>, and the algorithm you
+                    choose is <b>CBSH2-RTC</b>. The available improvement techniques include:{" "}
+                    <b>
+                      High-level admissible heuristics, Prioritizing conflict, Rectangle reasoning,
+                      Corridor reasoning, Bypassing conflict, Disjoint splitting, Mutex propagation,
+                      Target reasoning, SIPP
+                    </b>
+                    .
+                  </MKTypography>
+                </MKBox>
+                <Divider light sx={{ my: 0 }} />
+                <MKBox display="flex" justifyContent="right" py={1} px={1.5}>
+                  <MKButton onClick={() => this.setState({ isInfoDialogOpen: false })}>
+                    ok, got it
+                  </MKButton>
+                </MKBox>
+              </MKBox>
+            </Slide>
+          </Modal>
+        </MKBox>
+        <MKBox component="section">
+          <Modal
+            open={this.state.isDialogOpen}
+            onClose={() => {
+              this.setState({ isDialogOpen: false });
+            }}
+            sx={{ display: "grid", placeItems: "center" }}
+          >
+            <Slide direction="down" in={this.state.isDialogOpen} timeout={500}>
+              <MKBox
+                position="relative"
+                width="fit-content"
+                display="flex"
+                flexDirection="column"
+                borderRadius="xl"
+                variant="gradient"
+                shadow="sm"
+              >
+                <MKBox p={6} textAlign="center">
+                  <MKTypography variant="h4" mt={1} mb={1}>
+                    Empty agent list
+                  </MKTypography>
+                  <MKTypography variant="body2" opacity={0.8} mb={2}>
+                    Please add at least one agent before starting planning.
+                  </MKTypography>
+                </MKBox>
+                <Divider light sx={{ my: 0 }} />
+                <MKBox display="flex" justifyContent="right" py={1} px={1.5}>
+                  <MKButton onClick={() => this.setState({ isDialogOpen: false })}>
+                    ok, got it
+                  </MKButton>
+                </MKBox>
+              </MKBox>
+            </Slide>
+          </Modal>
+        </MKBox>
+        <Grid container className="body" px={4} sx={{ WebkitUserDrag: "none" }}>
+          {/* 2d map */}
+          <Grid
+            item
+            container
+            xs={12}
+            md={8}
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+            sx={{ WebkitUserDrag: "none" }}
+          >
+            <Grid container id="map" sx={{ WebkitUserDrag: "none" }}>
+              <Grid
+                item
+                container
+                justifyContent="center"
+                columns={this.state.numCol >= 12 ? this.state.numCol + 1 : 12}
+              >
+                {Array.from("x".repeat(this.state.numCol + 1)).map((a, id) => {
+                  return <SingleGrid key={id} row={id - 1} col={-1} />;
+                })}
+              </Grid>
+              {this.state.map.map((row, rowId) => {
+                return (
+                  <Grid
+                    item
+                    container
+                    justifyContent="center"
+                    key={rowId}
+                    columns={this.state.numCol >= 12 ? this.state.numCol + 1 : 12}
+                    sx={{ WebkitWebkitUserDrag: "none" }}
+                  >
+                    <SingleGrid row={rowId} col={-1} />
+                    {row.map((grid, gridId) => {
+                      return (
+                        <SingleGrid
+                          key={gridId}
+                          row={rowId}
+                          col={gridId}
+                          isWall={grid.isWall}
+                          isStart={grid.isStart}
+                          isGoal={grid.isGoal}
+                          agentId={grid.agent}
+                          color={grid.color}
+                          isPlanned={this.state.isPlanned}
+                          onMouseDown={(row, col) => this.handleMouseDown(row, col)}
+                          onMouseEnter={(row, col) => this.handleMouseEnter(row, col)}
+                          onMouseUp={() => this.handleMouseUp()}
+                          sx={{ WebkitUserDrag: "none" }}
+                        />
+                      );
+                    })}
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Grid>
+          <Grid
+            item
+            container
+            xs={12}
+            md={4}
             style={{
-              display: "table",
-              margin: "0 auto",
+              display: "inline-block",
             }}
           >
-            {this.state.map.map((row, rowId) => {
-              return (
-                <div className="row" key={rowId}>
-                  {row.map((grid, gridId) => {
-                    return (
-                      <SingleGrid
-                        key={gridId}
-                        row={rowId}
-                        col={gridId}
-                        height={this.state.gridSideLength}
-                        width={this.state.gridSideLength}
-                        isWall={grid.isWall}
-                        isStart={grid.isStart}
-                        isGoal={grid.isGoal}
-                        agentId={grid.agent}
-                        color={grid.color}
-                        isPlanned={this.state.isPlanned}
-                        onMouseDown={(row, col) =>
-                          this.handleMouseDown(row, col)
-                        }
-                        onMouseEnter={(row, col) =>
-                          this.handleMouseEnter(row, col)
-                        }
-                        onMouseUp={() => this.handleMouseUp()}
-                      ></SingleGrid>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div
-          className="panel-container"
-          style={{
-            position: "fixed",
-            display: "inline-block",
-            width: "35%",
-            marginTop: 0,
-          }}
-        >
-          {this.state.isPlanning ? (
-            <LoadingAnimation />
-          ) : this.state.isPlanned ? (
-            <PlanningResult
-              algorithm={this.state.algorithmSummary}
-              status={this.state.planningStatus}
-              planningTime={this.state.planningTime}
-              paths={this.state.paths}
-              numCol={this.state.numCol}
-              startNew={() => this.startNewTask()}
-            ></PlanningResult>
-          ) : (
-            <div
-              className="panel"
-              style={{
-                display: "table",
-                marginLeft: "auto",
-                marginRight: "auto",
-                marginTop: 0,
-              }}
-            >
-              {/* user editable fields */}
-              <div className="options">
-                <Divider
-                  sx={{
-                    mt: "3%",
-                    "&::before, &::after": {
-                      borderColor: "warning.main",
-                    },
-                  }}
-                >
-                  <Chip label="Algorithm" variant="outlined" color="warning" />
-                </Divider>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    this.setState({ isAlgDialogOpen: true });
-                  }}
-                  fullWidth
-                  sx={{ mt: "3%" }}
-                  color="warning"
-                >
-                  Choose reasoning techniques
-                </Button>
-                <Dialog
-                  // fullWidth={fullWidth}
-                  // maxWidth={maxWidth}
-                  open={this.state.isAlgDialogOpen}
-                  onClose={() => {
-                    this.setState({ isAlgDialogOpen: false });
-                  }}
-                >
-                  <DialogTitle sx={{ textAlign: "center" }}>
-                    CBS improvement techniques
-                  </DialogTitle>
-                  <DialogContent>
-                    <Box
-                      noValidate
-                      component="form"
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        m: "auto",
-                        width: "fit-content",
-                      }}
+            <div>
+              {this.state.isPlanning ? (
+                <LoadingAnimation />
+              ) : this.state.isPlanned ? (
+                <PlanningResult
+                  algorithm={this.state.algorithmSummary}
+                  status={this.state.planningStatus}
+                  planningTime={this.state.planningTime}
+                  paths={this.state.paths}
+                  numCol={this.state.numCol}
+                  startNew={() => this.startNewTask()}
+                  isDisabled={!this.state.isAnimationFinished}
+                ></PlanningResult>
+              ) : (
+                <MKBox component="section" py={2}>
+                  <Container>
+                    {/* user editable fields */}
+                    <Grid
+                      container
+                      item
+                      justifyContent="center"
+                      xs={10}
+                      lg={7}
+                      mx="auto"
+                      textAlign="center"
                     >
-                      <FormControl>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          High level heuristics
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.whichHeuristic}
-                          onChange={(e) =>
-                            this.setState({ whichHeuristic: e.target.value })
-                          }
+                      <MKTypography variant="h3" mb={1}>
+                        Algorithm
+                      </MKTypography>
+                    </Grid>
+                    <Grid container item xs={12} lg={10} sx={{ mx: "auto" }}>
+                      <Grid container spacing={1}>
+                        <Grid item xs={12} md={12}>
+                          <MKButton
+                            variant="outlined"
+                            onClick={() => {
+                              this.setState({ isAlgDialogOpen: true });
+                            }}
+                            fullWidth
+                            color="info"
+                          >
+                            Choose reasoning techniques
+                          </MKButton>
+                        </Grid>
+                        <Modal
+                          open={this.state.isAlgDialogOpen}
+                          onClose={() => {
+                            this.setState({ isAlgDialogOpen: false });
+                          }}
+                          sx={{ display: "grid", placeItems: "center" }}
                         >
-                          {this.state.heuristics.map((heuristic, id) => {
-                            return (
-                              <FormControlLabel
-                                key={id}
-                                value={id}
-                                control={<Radio />}
-                                label={heuristic}
-                              />
-                            );
-                          })}
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          Rectangle reasoning
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.whichRectangle}
-                          onChange={(e) =>
-                            this.setState({ whichRectangle: e.target.value })
-                          }
-                        >
-                          {this.state.rectangleReasoning.map((a, id) => {
-                            return (
-                              <FormControlLabel
-                                key={id}
-                                value={id}
-                                control={<Radio />}
-                                label={a}
-                              />
-                            );
-                          })}
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          Corridor Reasoning
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.whichCorridor}
-                          onChange={(e) =>
-                            this.setState({ whichCorridor: e.target.value })
-                          }
-                        >
-                          {this.state.corridorReasoning.map((a, id) => {
-                            return (
-                              <FormControlLabel
-                                key={id}
-                                value={id}
-                                control={<Radio />}
-                                label={a}
-                              />
-                            );
-                          })}
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          Prioritize conflict
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.isPrioritizeConflict}
-                          onChange={(e) =>
-                            this.setState({
-                              isPrioritizeConflict: e.target.value,
-                            })
-                          }
-                        >
-                          <FormControlLabel
-                            key={1}
-                            value={true}
-                            control={<Radio />}
-                            label="True"
-                          />
-                          <FormControlLabel
-                            key={0}
-                            value={false}
-                            control={<Radio />}
-                            label="False"
-                          />
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          Bypass conflict
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.isBypass}
-                          onChange={(e) =>
-                            this.setState({
-                              isBypass: e.target.value,
-                            })
-                          }
-                        >
-                          <FormControlLabel
-                            key={1}
-                            value={true}
-                            control={<Radio />}
-                            label="True"
-                          />
-                          <FormControlLabel
-                            key={0}
-                            value={false}
-                            control={<Radio />}
-                            label="False"
-                          />
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          Mutex Propagation
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.isMutex}
-                          onChange={(e) =>
-                            this.setState({
-                              isMutex: e.target.value,
-                            })
-                          }
-                        >
-                          <FormControlLabel
-                            key={1}
-                            value={true}
-                            control={<Radio />}
-                            label="True"
-                          />
-                          <FormControlLabel
-                            key={0}
-                            value={false}
-                            control={<Radio />}
-                            label="False"
-                          />
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          Target reasoning
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.isTarget}
-                          onChange={(e) =>
-                            this.setState({
-                              isTarget: e.target.value,
-                            })
-                          }
-                        >
-                          <FormControlLabel
-                            key={1}
-                            value={true}
-                            control={<Radio />}
-                            label="True"
-                          />
-                          <FormControlLabel
-                            key={0}
-                            value={false}
-                            control={<Radio />}
-                            label="False"
-                          />
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          Disjoint splitting
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.isDisjointSplitting}
-                          onChange={(e) =>
-                            this.setState({
-                              isDisjointSplitting: e.target.value,
-                            })
-                          }
-                        >
-                          <FormControlLabel
-                            key={1}
-                            value={true}
-                            control={<Radio />}
-                            label="True"
-                          />
-                          <FormControlLabel
-                            key={0}
-                            value={false}
-                            control={<Radio />}
-                            label="False"
-                          />
-                        </RadioGroup>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                          SIPP
-                        </FormLabel>
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-controlled-radio-buttons-group"
-                          name="controlled-radio-buttons-group"
-                          value={this.state.isSIPP}
-                          onChange={(e) =>
-                            this.setState({
-                              isSIPP: e.target.value,
-                            })
-                          }
-                        >
-                          <FormControlLabel
-                            key={1}
-                            value={true}
-                            control={<Radio />}
-                            label="True"
-                          />
-                          <FormControlLabel
-                            key={0}
-                            value={false}
-                            control={<Radio />}
-                            label="False"
-                          />
-                        </RadioGroup>
-                      </FormControl>
-                    </Box>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      onClick={() => this.setState({ isAlgDialogOpen: false })}
+                          <Slide direction="down" in={this.state.isAlgDialogOpen} timeout={500}>
+                            <MKBox
+                              position="relative"
+                              width="500px"
+                              display="flex"
+                              flexDirection="column"
+                              borderRadius="xl"
+                              variant="gradient"
+                              shadow="sm"
+                            >
+                              <MKBox
+                                display="flex"
+                                alginItems="center"
+                                justifyContent="center"
+                                py={2}
+                                px={2}
+                              >
+                                <MKTypography variant="h4">CBS improvement techniques</MKTypography>
+                              </MKBox>
+                              <Divider dark="true" sx={{ my: 0 }} />
+                              <MKBox px={2}>
+                                <MKTypography variant="h6">High-level heuristics</MKTypography>
+                                <RadioGroup
+                                  row
+                                  value={this.state.whichHeuristic}
+                                  onChange={(e) =>
+                                    this.setState({ whichHeuristic: e.target.value })
+                                  }
+                                >
+                                  {this.state.heuristics.map((heuristic, id) => {
+                                    return (
+                                      <FormControlLabel
+                                        key={id}
+                                        value={id}
+                                        control={<Radio />}
+                                        label={heuristic}
+                                      />
+                                    );
+                                  })}
+                                </RadioGroup>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <MKTypography variant="h6">Rectangle reasoning</MKTypography>
+                                <RadioGroup
+                                  row
+                                  value={this.state.whichRectangle}
+                                  onChange={(e) =>
+                                    this.setState({ whichRectangle: e.target.value })
+                                  }
+                                >
+                                  {this.state.rectangleReasoning.map((a, id) => {
+                                    return (
+                                      <FormControlLabel
+                                        key={id}
+                                        value={id}
+                                        control={<Radio />}
+                                        label={a}
+                                      />
+                                    );
+                                  })}
+                                </RadioGroup>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <MKTypography variant="h6">Corridor reasoning</MKTypography>
+                                <RadioGroup
+                                  row
+                                  value={this.state.whichCorridor}
+                                  onChange={(e) => this.setState({ whichCorridor: e.target.value })}
+                                >
+                                  {this.state.corridorReasoning.map((a, id) => {
+                                    return (
+                                      <FormControlLabel
+                                        key={id}
+                                        value={id}
+                                        control={<Radio />}
+                                        label={a}
+                                      />
+                                    );
+                                  })}
+                                </RadioGroup>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <Grid container>
+                                  <Grid item container xs={12} md={5} alignItems="center">
+                                    <MKTypography variant="h6">Prioritizing conflict</MKTypography>
+                                  </Grid>
+                                  <Grid item container xs={12} md={7} alignItems="center">
+                                    <Switch
+                                      checked={this.state.isPrioritizeConflict}
+                                      onChange={(e) =>
+                                        this.setState({ isPrioritizeConflict: e.target.checked })
+                                      }
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <Grid container>
+                                  <Grid item container xs={12} md={5} alignItems="center">
+                                    <MKTypography variant="h6">Bypassing conflict</MKTypography>
+                                  </Grid>
+                                  <Grid item container xs={12} md={7} alignItems="center">
+                                    <Switch
+                                      checked={this.state.isBypass}
+                                      onChange={(e) =>
+                                        this.setState({ isBypass: e.target.checked })
+                                      }
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <Grid container>
+                                  <Grid item container xs={12} md={5} alignItems="center">
+                                    <MKTypography variant="h6">Disjoint splitting</MKTypography>
+                                  </Grid>
+                                  <Grid item container xs={12} md={7} alignItems="center">
+                                    <Switch
+                                      checked={this.state.isDisjointSplitting}
+                                      onChange={(e) =>
+                                        this.setState({ isDisjointSplitting: e.target.checked })
+                                      }
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <Grid container>
+                                  <Grid item container xs={12} md={5} alignItems="center">
+                                    <MKTypography variant="h6">Mutex propagation</MKTypography>
+                                  </Grid>
+                                  <Grid item container xs={12} md={7} alignItems="center">
+                                    <Switch
+                                      checked={this.state.algorithm === 1}
+                                      onChange={() =>
+                                        this.setState((prevState) => ({
+                                          algorithm: prevState.algorithm === 1 ? 0 : 1,
+                                        }))
+                                      }
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <Grid container>
+                                  <Grid item container xs={12} md={5} alignItems="center">
+                                    <MKTypography variant="h6">Target reasoning</MKTypography>
+                                  </Grid>
+                                  <Grid item container xs={12} md={7} alignItems="center">
+                                    <Switch
+                                      checked={this.state.isTarget}
+                                      onChange={(e) =>
+                                        this.setState({ isTarget: e.target.checked })
+                                      }
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </MKBox>
+                              <MKBox px={2}>
+                                <Grid container>
+                                  <Grid item container xs={12} md={5} alignItems="center">
+                                    <MKTypography variant="h6">SIPP</MKTypography>
+                                  </Grid>
+                                  <Grid item container xs={12} md={7} alignItems="center">
+                                    <Switch
+                                      checked={this.state.isSIPP}
+                                      onChange={(e) => this.setState({ isSIPP: e.target.checked })}
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </MKBox>
+
+                              <Divider light sx={{ my: 0 }} />
+                              <MKBox display="flex" justifyContent="right" py={2} px={1.5}>
+                                <MKButton
+                                  color="info"
+                                  onClick={() => {
+                                    this.setState({ isAlgDialogOpen: false });
+                                  }}
+                                >
+                                  set
+                                </MKButton>
+                              </MKBox>
+                            </MKBox>
+                          </Slide>
+                        </Modal>
+                      </Grid>
+                    </Grid>
+
+                    <Grid
+                      container
+                      item
+                      justifyContent="center"
+                      xs={10}
+                      lg={7}
+                      mx="auto"
+                      textAlign="center"
+                      mt={3}
                     >
-                      Set
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+                      <MKTypography variant="h3" mb={1}>
+                        Map info
+                      </MKTypography>
+                    </Grid>
+                    <Grid container item xs={12} lg={10} sx={{ mx: "auto" }}>
+                      <Grid container spacing={1}>
+                        <Grid item xs={12} md={6}>
+                          <MKInput
+                            fullWidth
+                            required
+                            id="num-row"
+                            label="Number of Rows"
+                            color="info"
+                            type="number"
+                            helperText="Range between 4-30"
+                            onChange={(e) => this.setState({ tempRow: parseInt(e.target.value) })}
+                            onBlur={(e) => this.changeMapRow(e)}
+                            value={this.state.tempRow ? this.state.tempRow : ""}
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <MKInput
+                            required
+                            fullWidth
+                            id="num-col"
+                            label="Number of columns"
+                            color="info"
+                            type="number"
+                            helperText="Range between 4-30"
+                            onChange={(e) => {
+                              this.setState({ tempCol: parseInt(e.target.value) });
+                            }}
+                            onBlur={(e) => this.changeMapCol(e)}
+                            value={this.state.tempCol ? this.state.tempCol : ""}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Grid>
 
-                <Divider
-                  sx={{
-                    "&::before, &::after": {
-                      borderColor: "info.light",
-                    },
-                    mt: "3%",
-                  }}
-                >
-                  <Chip label="Map Info" variant="outlined" color="info" />
-                </Divider>
-                <div className="map-setting" style={{ marginTop: "3%" }}>
-                  <TextField
-                    id="num-row"
-                    label="Number of Rows"
-                    color="info"
-                    type="number"
-                    sx={{ mr: 1 }}
-                    helperText="Range between 4-40"
-                    onChange={(e) => this.handleEnterRow(e)}
-                    onBlur={(e) => this.changeMapRow(e)}
-                    value={this.state.numRow ? this.state.numRow : ""}
-                  />
-                  <TextField
-                    required
-                    id="num-col"
-                    label="Number of columns"
-                    color="info"
-                    type="number"
-                    helperText="Range between 4-40"
-                    onChange={(e) => this.handleEnterCol(e)}
-                    onBlur={(e) => this.changeMapCol(e)}
-                    value={this.state.numCol ? this.state.numCol : ""}
-                  />
-                </div>
-                <Divider
-                  sx={{
-                    mt: "3%",
-                    "&::before, &::after": {
-                      borderColor: "secondary.light",
-                    },
-                  }}
-                >
-                  <Chip
-                    label="Add Agent"
-                    variant="outlined"
-                    color="secondary"
-                  />
-                </Divider>
-                <form
-                  className="add-agent"
-                  onSubmit={(e) => this.handleAddAgent(e)}
-                  style={{ marginTop: "3%" }}
-                >
-                  <div>
-                    <TextField
-                      required
-                      id="add-start-row"
-                      label="Start row index"
-                      color="secondary"
-                      type="number"
-                      sx={{ mr: 1 }}
-                      onChange={(e) => {
-                        this.setState({ addedSRow: parseInt(e.target.value) });
-                      }}
-                      error={
-                        this.state.addedSRow >= this.state.numRow ||
-                        this.state.addedSRow < 0
-                      }
-                      value={
-                        this.state.addedSRow || this.state.addedSRow === 0
-                          ? this.state.addedSRow
-                          : ""
-                      }
-                      helperText={
-                        this.state.addedSRow >= this.state.numRow ||
-                        this.state.addedSRow < 0
-                          ? "row index out of range"
-                          : " "
-                      }
-                    />
-                    <TextField
-                      required
-                      id="add-start-col"
-                      label="Start column index"
-                      color="secondary"
-                      type="number"
-                      onChange={(e) => {
-                        this.setState({ addedSCol: parseInt(e.target.value) });
-                      }}
-                      error={
-                        this.state.addedSCol >= this.state.numCol ||
-                        this.state.addedSCol < 0
-                      }
-                      value={
-                        this.state.addedSCol || this.state.addedSCol === 0
-                          ? this.state.addedSCol
-                          : ""
-                      }
-                      helperText={
-                        this.state.addedSCol >= this.state.numCol ||
-                        this.state.addedSCol < 0
-                          ? "column index out of range"
-                          : " "
-                      }
-                    />
-                  </div>
-                  <div>
-                    <TextField
-                      required
-                      id="add-goal-row"
-                      label="Goal row index"
-                      color="secondary"
-                      type="number"
-                      sx={{ mr: 1 }}
-                      onChange={(e) => {
-                        this.setState({ addedGRow: parseInt(e.target.value) });
-                      }}
-                      error={
-                        this.state.addedGRow >= this.state.numRow ||
-                        this.state.addedGRow < 0
-                      }
-                      value={
-                        this.state.addedGRow || this.state.addedGRow === 0
-                          ? this.state.addedGRow
-                          : ""
-                      }
-                      helperText={
-                        this.state.addedGRow >= this.state.numRow ||
-                        this.state.addedGRow < 0
-                          ? "row index out of range"
-                          : " "
-                      }
-                    />
-                    <TextField
-                      required
-                      id="add-goal-col"
-                      label="Goal column index"
-                      color="secondary"
-                      type="number"
-                      onChange={(e) => {
-                        this.setState({ addedGCol: parseInt(e.target.value) });
-                      }}
-                      error={
-                        this.state.addedGCol >= this.state.numCol ||
-                        this.state.addedGCol < 0
-                      }
-                      value={
-                        this.state.addedGCol || this.state.addedGCol === 0
-                          ? this.state.addedGCol
-                          : ""
-                      }
-                      helperText={
-                        this.state.addedGCol >= this.state.numCol ||
-                        this.state.addedGCol < 0
-                          ? "column index out of range"
-                          : " "
-                      }
-                    />
-                  </div>
-
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    startIcon={<AddIcon />}
-                    sx={{ width: "100%", bgcolor: "secondary.light" }}
-                  >
-                    add agent
-                  </Button>
-
-                  <Snackbar
-                    open={this.state.snackbarOpen}
-                    autoHideDuration={1000}
-                    onClose={(event, reason) =>
-                      this.handleCloseSnackbar(event, reason)
-                    }
-                  >
-                    <Alert
-                      onClose={(event, reason) =>
-                        this.handleCloseSnackbar(event, reason)
-                      }
-                      severity={this.state.isError ? "error" : "success"}
-                      sx={{ width: "100%" }}
+                    <Grid
+                      container
+                      item
+                      justifyContent="center"
+                      xs={10}
+                      lg={7}
+                      mx="auto"
+                      mt={3}
+                      textAlign="center"
                     >
-                      {this.state.isError
-                        ? "Position already taken!"
-                        : "Successfully added!"}
-                    </Alert>
-                  </Snackbar>
-                </form>
-              </div>
+                      <MKTypography variant="h3" mb={1}>
+                        Add agent
+                      </MKTypography>
+                    </Grid>
+                    <Grid container item xs={12} lg={10} sx={{ mx: "auto" }}>
+                      <form onSubmit={(e) => this.handleAddAgent(e)}>
+                        <Grid container spacing={1}>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              required
+                              id="add-start-row"
+                              label="Start row index"
+                              color="secondary"
+                              type="number"
+                              sx={{ mr: 1 }}
+                              onChange={(e) => {
+                                this.setState({ addedSRow: parseInt(e.target.value) });
+                              }}
+                              error={
+                                this.state.addedSRow >= this.state.numRow ||
+                                this.state.addedSRow < 0
+                              }
+                              value={
+                                this.state.addedSRow || this.state.addedSRow === 0
+                                  ? this.state.addedSRow
+                                  : ""
+                              }
+                              helperText={
+                                this.state.addedSRow >= this.state.numRow ||
+                                this.state.addedSRow < 0
+                                  ? "row index out of range"
+                                  : " "
+                              }
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              required
+                              id="add-start-col"
+                              label="Start column index"
+                              color="secondary"
+                              type="number"
+                              onChange={(e) => {
+                                this.setState({ addedSCol: parseInt(e.target.value) });
+                              }}
+                              error={
+                                this.state.addedSCol >= this.state.numCol ||
+                                this.state.addedSCol < 0
+                              }
+                              value={
+                                this.state.addedSCol || this.state.addedSCol === 0
+                                  ? this.state.addedSCol
+                                  : ""
+                              }
+                              helperText={
+                                this.state.addedSCol >= this.state.numCol ||
+                                this.state.addedSCol < 0
+                                  ? "column index out of range"
+                                  : " "
+                              }
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              required
+                              id="add-goal-row"
+                              label="Goal row index"
+                              color="secondary"
+                              type="number"
+                              sx={{ mr: 1 }}
+                              onChange={(e) => {
+                                this.setState({ addedGRow: parseInt(e.target.value) });
+                              }}
+                              error={
+                                this.state.addedGRow >= this.state.numRow ||
+                                this.state.addedGRow < 0
+                              }
+                              value={
+                                this.state.addedGRow || this.state.addedGRow === 0
+                                  ? this.state.addedGRow
+                                  : ""
+                              }
+                              helperText={
+                                this.state.addedGRow >= this.state.numRow ||
+                                this.state.addedGRow < 0
+                                  ? "row index out of range"
+                                  : " "
+                              }
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              required
+                              id="add-goal-col"
+                              label="Goal column index"
+                              color="secondary"
+                              type="number"
+                              onChange={(e) => {
+                                this.setState({ addedGCol: parseInt(e.target.value) });
+                              }}
+                              error={
+                                this.state.addedGCol >= this.state.numCol ||
+                                this.state.addedGCol < 0
+                              }
+                              value={
+                                this.state.addedGCol || this.state.addedGCol === 0
+                                  ? this.state.addedGCol
+                                  : ""
+                              }
+                              helperText={
+                                this.state.addedGCol >= this.state.numCol ||
+                                this.state.addedGCol < 0
+                                  ? "column index out of range"
+                                  : " "
+                              }
+                            />
+                          </Grid>
 
-              {/* display map-related information */}
-              <div className="display-info" style={{ marginTop: "3%" }}>
-                <div>
-                  {this.state.agents.map((agent, agentId) => {
-                    return (
-                      <Chip
-                        sx={{
-                          bgcolor: agent.color,
-                          mr: 2,
-                        }}
-                        key={agentId + 1}
-                        label={`agent ${agentId + 1}`}
-                        onDelete={(e) => this.handleDeleteAgent(e)}
-                      ></Chip>
-                    );
-                  })}
-                </div>
-              </div>
+                          <Grid item xs={12} md={12}>
+                            <MKButton
+                              variant="gradient"
+                              color="info"
+                              type="submit"
+                              startIcon={<AddIcon />}
+                              fullWidth
+                            >
+                              add agent
+                            </MKButton>
+                          </Grid>
 
-              {/* plan button */}
-              <div style={{ marginTop: "3%" }}>
-                <Button
-                  variant="contained"
-                  color="success"
-                  endIcon={<SendIcon />}
-                  sx={{ width: "100%" }}
-                  onClick={(e) => this.requestSolution(e)}
-                >
-                  Plan!
-                </Button>
-              </div>
-              <div></div>
+                          <Snackbar
+                            open={this.state.snackbarOpen}
+                            autoHideDuration={1000}
+                            onClose={(event, reason) => this.handleCloseSnackbar(event, reason)}
+                          >
+                            <Alert
+                              onClose={(event, reason) => this.handleCloseSnackbar(event, reason)}
+                              severity={this.state.isError ? "error" : "success"}
+                              sx={{ width: "100%" }}
+                            >
+                              {this.state.isError
+                                ? "Position already taken!"
+                                : "Successfully added!"}
+                            </Alert>
+                          </Snackbar>
+                        </Grid>
+                      </form>
+                    </Grid>
+                    <Grid container item xs={12} lg={10} mt={3} sx={{ mx: "auto" }}>
+                      <Grid item xs={12} md={12}>
+                        <MKButton
+                          variant="contained"
+                          color="success"
+                          endIcon={<SendIcon />}
+                          onClick={(e) => this.requestSolution(e)}
+                          fullWidth
+                        >
+                          Plan!
+                        </MKButton>
+                      </Grid>
+                    </Grid>
+                  </Container>
+                </MKBox>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </Grid>
+        </Grid>
+      </BaseLayout>
     );
   }
 }

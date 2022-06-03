@@ -1,43 +1,65 @@
-import "./App.css";
-import * as React from "react";
-import LAMAPFVisualizer from "./LAMAPFVisualizer";
-import MAPFVisualizer from "./MAPFVisualizer";
-import AppAppBar from "./AppAppBar";
-import Home from "./Home";
-import withRoot from "./withRoot";
+/**
+=========================================================
+* Material Kit 2 React - v2.0.0
+=========================================================
 
-import "bootstrap";
+* Product Page: https://www.creative-tim.com/product/material-kit-react
+* Copyright 2021 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+import { useEffect } from "react";
+
+// react-router components
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+
+// @mui material components
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+
+// Material Kit 2 React themes
+import theme from "assets/theme";
+import Presentation from "layouts/pages/presentation";
+
+// Material Kit 2 React routes
+import routes from "routes";
 import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap/dist/js/bootstrap.js";
 
-function App(props) {
-  var body;
-  if (props.page === "la") {
-    body = <LAMAPFVisualizer />;
-  } else if (props.page === "classic") {
-    body = <MAPFVisualizer />;
-  } else {
-    body = <Home />;
-  }
+export default function App() {
+  const { pathname } = useLocation();
+
+  // Setting page scroll to 0 when changing the route
+  useEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.scrollingElement.scrollTop = 0;
+  }, [pathname]);
+
+  const getRoutes = (allRoutes) =>
+    allRoutes.map((route) => {
+      if (route.collapse) {
+        return getRoutes(route.collapse);
+      }
+
+      if (route.route) {
+        return <Route exact path={route.route} element={route.component} key={route.key} />;
+      }
+
+      return null;
+    });
 
   return (
-    <React.Fragment>
-      <meta charSet="utf-8" />
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, shrink-to-fit=no"
-      />
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-      />
-      <AppAppBar></AppAppBar>
-      {/* <Home></Home> */}
-      {/* <LAMAPFVisualizer></LAMAPFVisualizer> */}
-      {body}
-      {/* <AppFooter></AppFooter> */}
-    </React.Fragment>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Routes>
+        {getRoutes(routes)}
+        <Route path="/" element={<Presentation />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </ThemeProvider>
   );
 }
-
-export default withRoot(App);
