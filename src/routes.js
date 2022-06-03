@@ -49,26 +49,6 @@ import ClassicPaper from "pages/ClassicPaper";
 import { faBookOpenReader } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-// Sections
-// import PageHeaders from "layouts/sections/page-sections/page-headers";
-// import Features from "layouts/sections/page-sections/featuers";
-// import Navbars from "layouts/sections/navigation/navbars";
-// import NavTabs from "layouts/sections/navigation/nav-tabs";
-// import Pagination from "layouts/sections/navigation/pagination";
-// import Inputs from "layouts/sections/input-areas/inputs";
-// import Forms from "layouts/sections/input-areas/forms";
-// import Alerts from "layouts/sections/attention-catchers/alerts";
-// import Modals from "layouts/sections/attention-catchers/modals";
-// import TooltipsPopovers from "layouts/sections/attention-catchers/tooltips-popovers";
-// import Avatars from "layouts/sections/elements/avatars";
-// import Badges from "layouts/sections/elements/badges";
-// import BreadcrumbsEl from "layouts/sections/elements/breadcrumbs";
-// import Buttons from "layouts/sections/elements/buttons";
-// import Dropdowns from "layouts/sections/elements/dropdowns";
-// import ProgressBars from "layouts/sections/elements/progress-bars";
-// import Toggles from "layouts/sections/elements/toggles";
-// import Typography from "layouts/sections/elements/typography";
-
 const routes = [
   {
     name: "Visualizers",
@@ -82,6 +62,7 @@ const routes = [
           {
             name: "CBSH2-RTC",
             route: "/classic-visualizer",
+            key: "classic-visualizer",
             component: <MAPFVisualizer />,
           },
         ],
@@ -92,6 +73,7 @@ const routes = [
           {
             name: "MC-CBS",
             route: "/la-visualizer",
+            key: "la-visualizer",
             component: <LAMAPFVisualizer />,
           },
         ],
@@ -104,29 +86,8 @@ const routes = [
     columns: 1,
     rowsPerColumn: 2,
     route: "/papers",
+    key: "papers",
     component: <ClassicPaper />,
-    // collapse: [
-    //   {
-    //     name: "Classic MAPF",
-    //     collapse: [
-    //       {
-    //         name: "CBSH2-RTC",
-    //         route: "/classic-papers",
-    //         component: <ClassicPaper />,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     name: "Large Agent MAPF",
-    //     collapse: [
-    //       {
-    //         name: "MC-CBS",
-    //         route: "/la-visualizer",
-    //         component: <LAMAPFVisualizer />,
-    //       },
-    //     ],
-    //   },
-    // ],
   },
   {
     name: "more MAPF",

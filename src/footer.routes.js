@@ -7,15 +7,11 @@ import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 // Material Kit 2 React components
 import MKTypography from "components/MKTypography";
 
-// Images
-import logoCT from "assets/images/logo-ct-dark.png";
-
 const date = new Date().getFullYear();
 
 export default {
   brand: {
     name: "MAPF Visualizer",
-    image: logoCT,
     route: "/",
   },
   socials: [
@@ -66,7 +62,7 @@ export default {
         variant="button"
         fontWeight="regular"
       >
-        Yutong Li 
+        Yutong Li
       </MKTypography>
       {" with "} <FavoriteRoundedIcon />.
     </MKTypography>
