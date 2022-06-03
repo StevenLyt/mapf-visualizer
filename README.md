@@ -2,12 +2,11 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
-
   <h1 align="center">MAPF Visualizer</h1>
 
   <p align="center">
     A visualization tool for multi-agent path finding algorithms
-    <br />      <br />
+    <br />
     <img src='./src/assets/images/landingpage.png' />
 
 </div>
