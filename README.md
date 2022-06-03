@@ -2,8 +2,8 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
-  <h1 align="center">MAPF Visualizer</h1>
-  <p align="center">A visualization tool for multi-agent path finding algorithms.</p>
+  <h1 align="center"><a href="http://mapf-visualizer.com" style="text-decoration: none;">MAPF Visualizer</a></h1>
+  <p align="center"><i>A visualization tool for multi-agent path finding algorithms.</i></p>
   <img src='./src/assets/images/landingpage.png' />
 </div>
 
