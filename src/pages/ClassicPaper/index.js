@@ -95,6 +95,26 @@ function ClassicPaper() {
                   Koenig. <br />
                   <em>Artificial Intelligence (AIJ), vol 301, pages 103574, 2021.</em>
                 </MKTypography>
+                <MKTypography variant="h4">High-level heuristics</MKTypography>
+                <MKTypography variant="body1" my={2}>
+                  Improved Heuristics for Multi-Agent Path Finding with Conflict-Based Search.{" "}
+                  <br />
+                  Jiaoyang Li, Eli Boyarski, Ariel Felner, Hang Ma and Sven Koenig.
+                  <br />
+                  <em>
+                    International Joint Conference on Artificial Intelligence (IJCAI), pages
+                    442-449, 2019.
+                  </em>
+                </MKTypography>
+                <MKTypography variant="body1" my={2}>
+                  Adding Heuristics to Conflict-Based Search for Multi-Agent Path Finding. <br />
+                  Ariel Felner, Jiaoyang Li, Eli Boyarski, Hang Ma, Liron Cohen, T. K. Satish Kumar
+                  and Sven Koenig. <br />
+                  <em>
+                    International Conference on Automated Planning and Scheduling (ICAPS), pages
+                    83-87, 2018.
+                  </em>
+                </MKTypography>
                 <MKTypography variant="h4">Mutex Propagation</MKTypography>
                 <MKTypography variant="body1" my={2}>
                   Multi-Agent Path Finding with Mutex Propagation. <br />

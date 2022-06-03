@@ -1,15 +1,15 @@
 [![MIT License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
-<br />
 <div align="center">
-<img src='./src/asset/mapf-demo.gif' width="300" height="300"/>
 
-  <h3 align="center">MAPF Visualizer</h3>
+  <h1 align="center">MAPF Visualizer</h1>
 
   <p align="center">
     A visualization tool for multi-agent path finding algorithms
-    <br />
+    <br />      <br />
+    <img src='./src/assets/images/landingpage.png' />
+
 </div>
 
 ## About The Project
@@ -35,7 +35,7 @@ This website offers a much more intuitive experience. Users will be able to:
 
 #### 1. Classic single-point MAPF
 
-- CBSH2-RTC by Jiaoyang Li. 
+- CBSH2-RTC by Jiaoyang Li.
   This solver consists of Conflict-Based Search (CBS) and many of its improvement techniques, including:
   - Prioritizing conflicts
   - Bypassing conflicts

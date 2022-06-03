@@ -103,28 +103,30 @@ const routes = [
     icon: <FontAwesomeIcon icon={faBookOpenReader} />,
     columns: 1,
     rowsPerColumn: 2,
-    collapse: [
-      {
-        name: "Classic MAPF",
-        collapse: [
-          {
-            name: "CBSH2-RTC",
-            route: "/classic-papers",
-            component: <ClassicPaper />,
-          },
-        ],
-      },
-      {
-        name: "Large Agent MAPF",
-        collapse: [
-          {
-            name: "MC-CBS",
-            route: "/la-visualizer",
-            component: <LAMAPFVisualizer />,
-          },
-        ],
-      },
-    ],
+    route: "/papers",
+    component: <ClassicPaper />,
+    // collapse: [
+    //   {
+    //     name: "Classic MAPF",
+    //     collapse: [
+    //       {
+    //         name: "CBSH2-RTC",
+    //         route: "/classic-papers",
+    //         component: <ClassicPaper />,
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     name: "Large Agent MAPF",
+    //     collapse: [
+    //       {
+    //         name: "MC-CBS",
+    //         route: "/la-visualizer",
+    //         component: <LAMAPFVisualizer />,
+    //       },
+    //     ],
+    //   },
+    // ],
   },
   {
     name: "more MAPF",
