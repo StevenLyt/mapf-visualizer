@@ -27,6 +27,7 @@ import TwitterIcon from "@mui/icons-material/Twitter";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import LinkIcon from "@mui/icons-material/Link";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 
 // Material Kit 2 React components
 import MKBox from "components/MKBox";
@@ -95,7 +96,7 @@ function CenteredFooter({ company, links, socials, light }) {
             >
               {name}
             </MKTypography>
-            .
+            {" with "} <FavoriteRoundedIcon />.
           </MKTypography>
         </Grid>
       </Grid>
@@ -117,7 +118,6 @@ CenteredFooter.defaultProps = {
     { icon: <GitHubIcon fontSize="small" />, link: "https://github.com/stevenlyt" },
     { icon: <LinkIcon fontSize="small" />, link: "https://yutongli.me" },
     { icon: <LinkedInIcon fontSize="small" />, link: "https://linkedin.com/in/lyt1106" },
-
   ],
   light: false,
 };
