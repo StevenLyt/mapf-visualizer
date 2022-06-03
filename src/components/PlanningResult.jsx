@@ -34,9 +34,6 @@ export default class PlanningResult extends Component {
           variant="h2"
           align="center"
           color={isSuccessful ? "success" : "error"}
-          sx={{
-            mb: 2,
-          }}
         >
           {isSuccessful
             ? "Optimal solution found!"
@@ -55,8 +52,8 @@ export default class PlanningResult extends Component {
                 preserveAspectRatio: "xMidYMid slice",
               },
             }}
-            height={100}
-            width={100}
+            height={150}
+            width={150}
             style={{ marginBottom: 80, pointerEvents: "none" }}
           />
         ) : (

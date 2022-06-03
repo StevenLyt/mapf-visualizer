@@ -57,7 +57,7 @@ function ClassicPaper() {
               Research papers on MAPF
             </MKTypography>
             <MKTypography variant="body1" color="white" opacity={0.8} mt={1} mb={3}>
-              We list all the research papers from which the visualizer is built upon.
+              We list all the research papers that the visualizers are built upon.
             </MKTypography>
             {/* <MKButton color="default" sx={{ color: ({ palette: { dark } }) => dark.main }}>
               create account
