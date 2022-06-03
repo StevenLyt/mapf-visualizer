@@ -30,11 +30,7 @@ export default class PlanningResult extends Component {
           alignItems: "normal",
         }}
       >
-        <MKTypography
-          variant="h2"
-          align="center"
-          color={isSuccessful ? "success" : "error"}
-        >
+        <MKTypography variant="h2" align="center" color={isSuccessful ? "success" : "error"}>
           {isSuccessful
             ? "Optimal solution found!"
             : status === "Nosolutions"
