@@ -21,6 +21,7 @@ export default class PlanningResult extends Component {
     const { algorithm, status, planningTime, paths, startNew, isDisabled } = this.props;
     var isSuccessful = status >= 0;
     console.log(status);
+    console.log(status == -1);
     return (
       <Container
         sx={{
@@ -35,7 +36,7 @@ export default class PlanningResult extends Component {
         <MKTypography variant="h2" align="center" color={isSuccessful ? "success" : "error"}>
           {isSuccessful
             ? "Optimal solution found!"
-            : status === -1
+            : status == -1
             ? "Time out!"
             : "No solution found!"}
         </MKTypography>

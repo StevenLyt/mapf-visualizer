@@ -395,47 +395,51 @@ class MAPFVisualizer extends Component {
   }
 
   startNewTask() {
-    this.setState({
-      numRow: DEFAULTROW,
-      numCol: DEFAULTCOL,
-      tempRow: DEFAULTROW,
-      tempCol: DEFAULTCOL,
-      map: this.createEmptyMap(DEFAULTROW, DEFAULTCOL),
-      agents: [],
-      numAgents: 0,
-      addedSRow: null,
-      addedSCol: null,
-      addedGRow: null,
-      addedGCol: null,
-      snackbarOpen: false,
-      isError: false,
-      isMousePressed: false,
-      isPlanning: false,
-      isPlanned: false,
-      isAnimationFinished: false,
-      planningTime: -1,
-      planningStatus: "",
-      paths: [],
-      whichHeuristic: 3,
-      whichRectangle: 3,
-      whichCorridor: 4,
-      isBypass: true,
-      isPrioritizeConflict: true,
-      isDisjointSplitting: false,
-      isMutex: false,
-      isTarget: true,
-      isSIPP: false,
-      algorithmSummary: "",
+    this.setState(
+      {
+        numRow: DEFAULTROW,
+        numCol: DEFAULTCOL,
+        tempRow: DEFAULTROW,
+        tempCol: DEFAULTCOL,
+        map: this.createEmptyMap(DEFAULTROW, DEFAULTCOL),
+        agents: [],
+        numAgents: 0,
+        addedSRow: null,
+        addedSCol: null,
+        addedGRow: null,
+        addedGCol: null,
+        snackbarOpen: false,
+        isError: false,
+        isMousePressed: false,
+        isPlanning: false,
+        isPlanned: false,
+        isAnimationFinished: false,
+        planningTime: -1,
+        planningStatus: "",
+        paths: [],
+        whichHeuristic: 3,
+        whichRectangle: 3,
+        whichCorridor: 4,
+        isBypass: true,
+        isPrioritizeConflict: true,
+        isDisjointSplitting: false,
+        isMutex: false,
+        isTarget: true,
+        isSIPP: false,
+        algorithmSummary: "",
 
-      startToAdd: false,
-      goalToAdd: false,
-    });
-    for (let i = 0; i < DEFAULTROW; i++) {
-      for (let j = 0; j < DEFAULTCOL; j++) {
-        document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "";
-        document.getElementById(`grid-${i}-${j}`).style.border = "";
+        startToAdd: false,
+        goalToAdd: false,
+      },
+      () => {
+        for (let i = 0; i < DEFAULTROW; i++) {
+          for (let j = 0; j < DEFAULTCOL; j++) {
+            document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "";
+            document.getElementById(`grid-${i}-${j}`).style.border = "";
+          }
+        }
       }
-    }
+    );
   }
 
   checkRowOOR() {

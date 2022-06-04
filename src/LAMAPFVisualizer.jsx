@@ -386,36 +386,40 @@ class LAMAPFVisualizer extends Component {
   }
 
   startNewTask() {
-    this.setState({
-      numRow: DEFAULTROW,
-      numCol: DEFAULTCOL,
-      tempRow: DEFAULTROW,
-      tempCol: DEFAULTCOL,
-      map: this.createEmptyMap(DEFAULTROW, DEFAULTCOL),
-      agents: [],
-      numAgents: 0,
-      addedSRow: null,
-      addedSCol: null,
-      addedGRow: null,
-      addedGCol: null,
-      addedHeight: null,
-      addedWidth: null,
-      snackbarOpen: false,
-      isError: false,
-      isMousePressed: false,
-      isPlanning: false,
-      isPlanned: false,
-      isAnimationFinished: false,
-      planningTime: -1,
-      planningStatus: "",
-      paths: [],
-    });
-    for (let i = 0; i < DEFAULTROW; i++) {
-      for (let j = 0; j < DEFAULTCOL; j++) {
-        document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "";
-        document.getElementById(`grid-${i}-${j}`).style.border = "";
+    this.setState(
+      {
+        numRow: DEFAULTROW,
+        numCol: DEFAULTCOL,
+        tempRow: DEFAULTROW,
+        tempCol: DEFAULTCOL,
+        map: this.createEmptyMap(DEFAULTROW, DEFAULTCOL),
+        agents: [],
+        numAgents: 0,
+        addedSRow: null,
+        addedSCol: null,
+        addedGRow: null,
+        addedGCol: null,
+        addedHeight: null,
+        addedWidth: null,
+        snackbarOpen: false,
+        isError: false,
+        isMousePressed: false,
+        isPlanning: false,
+        isPlanned: false,
+        isAnimationFinished: false,
+        planningTime: -1,
+        planningStatus: "",
+        paths: [],
+      },
+      () => {
+        for (let i = 0; i < DEFAULTROW; i++) {
+          for (let j = 0; j < DEFAULTCOL; j++) {
+            document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "";
+            document.getElementById(`grid-${i}-${j}`).style.border = "";
+          }
+        }
       }
-    }
+    );
   }
 
   checkRowOOR() {

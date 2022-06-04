@@ -27,7 +27,7 @@ export default function LoadingAnimation() {
           marginBottom: "auto",
         }}
       >
-        <MKTypography variant="h5">Fetching data from backend ...</MKTypography>
+        <MKTypography variant="h5">Planning and fetching data ...</MKTypography>
       </MKBox>
     </MKBox>
   );
