@@ -5,7 +5,7 @@ import demo from "assets/images/mapf-demo.gif";
 
 export default function MAPFInfo() {
   return (
-    <MKBox component="section" sx={{ display: "flex", bgcolor: "secondary", overflow: "hidden" }}>
+    <MKBox component="section" sx={{ display: "flex", overflow: "hidden" }}>
       <Container
         sx={{
           mt: 10,
@@ -14,6 +14,7 @@ export default function MAPFInfo() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <MKTypography variant="h2" fontWeight="bold" sx={{ mb: 10 }}>
@@ -26,35 +27,26 @@ export default function MAPFInfo() {
               src={demo}
               sx={{
                 pointerEvents: "none",
-                position: "absolute",
-                width: 400,
-                height: 400,
+                width: "100%",
+                height: "auto",
               }}
             />
           </Grid>
-          <Grid
-            item
-            container
-            xs={12}
-            md={8}
-    
-          >
-            <MKTypography variant="body1" color="text" sx={{ mb: 4 }}>
-              In the multi-agent path finding (MAPF) problem, we are given a graph and a set of
-              objects/agents. Each agent has a start position and goal position in the graph. At
-              each time step an agent can either move to a neighboring location or can wait in its
-              current location.
+          <Grid item xs={12} md={8} alignItems="center" justifyContent="center">
+            <MKTypography variant="body1" sx={{ mb: 4 }}>
+              In the multi-agent path finding (MAPF) problem, we are given a two-dimensional graph
+              (think it as a maze) and a set of objects/agents. Each agent has a start position and
+              goal position on the graph. The actions an agent can take is either moving to a
+              neighboring location or waiting in its current location.
             </MKTypography>
-
-            <MKTypography variant="body1" color="text" sx={{ mb: 4 }}>
-              The task is to find a set of optimal conflict-free paths. That is, every agent can
-              move to its goal without conflicting with other agents (i.e., without being in the
-              same location at the same time) while minimizing a cumulative cost function. The
-              common cost function is the sum over all agents of the number of time steps required
-              to reach the goal location. FOr this website, we primarily use grid-based MAPF, in
-              which each agent's position is an integer two-dimensional coordinate. For more
-              complete information, please visit{" "}
-              <Link href="http://mapf.info" underline="none" target="_blank">
+            <MKTypography variant="body1" sx={{ mb: 4 }}>
+              Our task is to find a set of optimal conflict-free paths. That is, every agent can
+              move to its goal without conflicting with other agents while minimizing a cumulative
+              cost function. The common cost function is the sum of every individual agent's time
+              cost. For this website, we primarily use grid-based MAPF, in which each agent's
+              position is an integer two-dimensional coordinate. For more complete information,
+              please visit{" "}
+              <Link href="http://mapf.info" color="info" underline="none" target="_blank">
                 this MAPF info website
               </Link>
               .

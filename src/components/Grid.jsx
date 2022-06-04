@@ -37,7 +37,7 @@ export default function SingleGrid(props) {
   const content = (isStart ? "S_" : "") + (isGoal ? "G_" : "") + (agentId > 0 ? agentId : " ");
 
   if (isWall) {
-    console.log("isWall");
+    // console.log("isWall");
   }
   return (
     <Grid

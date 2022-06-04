@@ -192,7 +192,7 @@ class LAMAPFVisualizer extends Component {
           planningStatus: data.status,
           paths: data.paths,
         });
-        if (data.status === "Optimal") {
+        if (data.status >= 0) {
           var finishTime = 0;
           data.paths.forEach((path, agentId) => {
             finishTime = Math.max(finishTime, path.length);
@@ -219,8 +219,8 @@ class LAMAPFVisualizer extends Component {
             }
           });
           setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
-        } else if (data.status === "No solutions") {
-        } else if (data.status === "Timeout") {
+        } else if (data.status === -1) {
+        } else if (data.status === -2) {
         }
       });
   }
@@ -471,6 +471,10 @@ class LAMAPFVisualizer extends Component {
                     choose is <b>MC-CBS</b>. The available improvement techniques include:{" "}
                     <b>Mutex Propagation</b>.
                   </MKTypography>
+                  <MKTypography variant="body2" mb={1}>
+                    3. In <b>Large Agent MAPF</b>, we denote the location of an agent by the
+                    coordinate of its top-left grid.
+                  </MKTypography>
                 </MKBox>
                 <Divider light sx={{ my: 0 }} />
                 <MKBox display="flex" justifyContent="right" py={1} px={1.5}>
@@ -500,11 +504,11 @@ class LAMAPFVisualizer extends Component {
                 variant="gradient"
                 shadow="sm"
               >
-                <MKBox p={6} textAlign="center">
+                <MKBox p={3} textAlign="center">
                   <MKTypography variant="h4" mt={1} mb={1}>
                     Empty agent list
                   </MKTypography>
-                  <MKTypography variant="body2" opacity={0.8} mb={2}>
+                  <MKTypography variant="body2">
                     Please add at least one agent before starting planning.
                   </MKTypography>
                 </MKBox>

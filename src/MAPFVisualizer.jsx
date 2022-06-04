@@ -79,6 +79,12 @@ class MAPFVisualizer extends Component {
       isTarget: true,
       isSIPP: false,
       algorithmSummary: "",
+
+      startToAdd: false,
+      goalToAdd: false,
+      colorToAdd: "",
+      addedSRowClick: null,
+      addedSColClick: null,
     };
   }
 
@@ -116,6 +122,9 @@ class MAPFVisualizer extends Component {
       this.setState({ isDialogOpen: true });
       return;
     }
+
+    if (this.state.goalToAdd) return;
+
     this.setState({ isPlanning: true });
 
     // change agents to border
@@ -179,7 +188,7 @@ class MAPFVisualizer extends Component {
           planningStatus: data.status,
           paths: data.paths,
         });
-        if (data.status === "Optimal") {
+        if (data.status >= 0) {
           var finishTime = 0;
           data.paths.forEach((path, agentId) => {
             finishTime = Math.max(finishTime, path.length);
@@ -200,8 +209,8 @@ class MAPFVisualizer extends Component {
             }
           });
           setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
-        } else if (data.status === "No solutions") {
-        } else if (data.status === "Timeout") {
+        } else if (data.status === -1) {
+        } else if (data.status === -2) {
         }
       });
   }
@@ -246,6 +255,12 @@ class MAPFVisualizer extends Component {
   // handleDeleteAgent(e) {
   //   console.log("color");
   // }
+
+  handleAddAgentByClick() {
+    const color = randomColor();
+    console.log("clicked");
+    this.setState({ startToAdd: true, colorToAdd: color });
+  }
 
   addAgent(color) {
     this.setState({
@@ -313,7 +328,49 @@ class MAPFVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
-    this.setState({ isMousePressed: true }, () => this.updateWall(row, col));
+    console.log(this.state.startToAdd);
+    if (this.state.startToAdd) {
+      if (!this.state.map[row][col].isWall && this.state.map[row][col].agent === -1) {
+        var map = this.state.map;
+        map[row][col].agent = this.state.numAgents + 1;
+        map[row][col].isStart = true;
+        map[row][col].color = this.state.colorToAdd;
+        this.setState({
+          startToAdd: false,
+          goalToAdd: true,
+          addedSRowClick: row,
+          addedSColClick: col,
+          map: map,
+        });
+      }
+    } else if (this.state.goalToAdd) {
+      if (!this.state.map[row][col].isWall && this.state.map[row][col].agent === -1) {
+        var map = this.state.map;
+        map[row][col].agent = this.state.numAgents + 1;
+        map[row][col].isGoal = true;
+        map[row][col].color = this.state.colorToAdd;
+        this.setState({
+          goalToAdd: false,
+          addedSRowClick: null,
+          addedSColClick: null,
+          colorToAdd: "",
+          numAgents: this.state.numAgents + 1,
+          map: map,
+          agents: [
+            ...this.state.agents,
+            {
+              SR: this.state.addedSRowClick,
+              SC: this.state.addedSColClick,
+              GR: row,
+              GC: col,
+              color: this.state.colorToAdd,
+            },
+          ],
+        });
+      }
+    } else {
+      this.setState({ isMousePressed: true }, () => this.updateWall(row, col));
+    }
   }
 
   handleMouseEnter(row, col) {
@@ -369,6 +426,9 @@ class MAPFVisualizer extends Component {
       isTarget: true,
       isSIPP: false,
       algorithmSummary: "",
+
+      startToAdd: false,
+      goalToAdd: false,
     });
     for (let i = 0; i < DEFAULTROW; i++) {
       for (let j = 0; j < DEFAULTCOL; j++) {
@@ -461,11 +521,11 @@ class MAPFVisualizer extends Component {
                 variant="gradient"
                 shadow="sm"
               >
-                <MKBox p={6} textAlign="center">
+                <MKBox p={3} textAlign="center">
                   <MKTypography variant="h4" mt={1} mb={1}>
                     Empty agent list
                   </MKTypography>
-                  <MKTypography variant="body2" opacity={0.8} mb={2}>
+                  <MKTypography variant="body2">
                     Please add at least one agent before starting planning.
                   </MKTypography>
                 </MKBox>
@@ -849,8 +909,35 @@ class MAPFVisualizer extends Component {
                         Add agent
                       </MKTypography>
                     </Grid>
-                    <Grid container item xs={12} lg={10} sx={{ mx: "auto" }}>
-                      <form onSubmit={(e) => this.handleAddAgent(e)}>
+                    <Grid
+                      container
+                      item
+                      xs={12}
+                      lg={10}
+                      sx={{ mx: "auto" }}
+                      justifyContent="center"
+                    >
+                      {" "}
+                      <Grid item xs={12} md={10} mb={2}>
+                        <MKTypography variant="body2" textAlign="center">
+                          To add an agent, first click this button, then click the start location
+                          followed by the goal location on the map.
+                        </MKTypography>
+                      </Grid>
+                      <Grid item xs={12} md={12} mb={1}>
+                        <MKButton
+                          variant="gradient"
+                          color="info"
+                          startIcon={<AddIcon />}
+                          fullWidth
+                          onClick={() => {
+                            this.handleAddAgentByClick();
+                          }}
+                        >
+                          add agent
+                        </MKButton>
+                      </Grid>
+                      {/* <form onSubmit={(e) => this.handleAddAgent(e)}>
                         <Grid container spacing={1}>
                           <Grid item xs={12} md={6}>
                             <TextField
@@ -995,7 +1082,7 @@ class MAPFVisualizer extends Component {
                             </Alert>
                           </Snackbar>
                         </Grid>
-                      </form>
+                      </form> */}
                     </Grid>
                     <Grid container item xs={12} lg={10} mt={3} sx={{ mx: "auto" }}>
                       <Grid item xs={12} md={12}>

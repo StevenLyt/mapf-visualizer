@@ -96,8 +96,6 @@ function Presentation() {
         <Counters />
         <Comparison />
         <MAPFInfo />
-        {/* <DesignBlocks /> */}
-        {/* <Pages /> */}
       </Card>
       <MKBox pt={6} px={1} mt={6}>
         <DefaultFooter content={footerRoutes} />
