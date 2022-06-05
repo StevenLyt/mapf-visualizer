@@ -223,6 +223,12 @@ class MAPFVisualizer extends Component {
       tempRow: t,
       numRow: t,
       map: this.createEmptyMap(t, this.state.numCol),
+      agents: [],
+      numAgents: 0,
+      startToAdd: false,
+      goalToAdd: false,
+      addedSRowClick: null,
+      addedSColClick: null,
     });
   }
 
@@ -234,6 +240,12 @@ class MAPFVisualizer extends Component {
       tempCol: t,
       numCol: t,
       map: this.createEmptyMap(this.state.numRow, t),
+      agents: [],
+      numAgents: 0,
+      startToAdd: false,
+      goalToAdd: false,
+      addedSRowClick: null,
+      addedSColClick: null,
     });
   }
 

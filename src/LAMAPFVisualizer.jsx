@@ -237,6 +237,14 @@ class LAMAPFVisualizer extends Component {
       tempRow: t,
       numRow: t,
       map: this.createEmptyMap(t, this.state.numCol),
+      agents: [],
+      numAgents: 0,
+      addedSRow: null,
+      addedSCol: null,
+      addedGRow: null,
+      addedGCol: null,
+      addedHeight: null,
+      addedWidth: null,
     });
   }
 
@@ -248,6 +256,14 @@ class LAMAPFVisualizer extends Component {
       tempCol: t,
       numCol: t,
       map: this.createEmptyMap(this.state.numRow, t),
+      agents: [],
+      numAgents: 0,
+      addedSRow: null,
+      addedSCol: null,
+      addedGRow: null,
+      addedGCol: null,
+      addedHeight: null,
+      addedWidth: null,
     });
   }
 
