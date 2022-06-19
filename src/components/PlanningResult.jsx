@@ -20,6 +20,7 @@ export default class PlanningResult extends Component {
   render() {
     const { algorithm, status, planningTime, paths, startNew, isDisabled } = this.props;
     var isSuccessful = status >= 0;
+    var isMemExceeded = status == -5;
     console.log(status);
     console.log(status == -1);
     return (
@@ -38,6 +39,8 @@ export default class PlanningResult extends Component {
             ? "Optimal solution found!"
             : status == -1
             ? "Time out!"
+            : isMemExceeded
+            ? "Memory exceeded"
             : "No solution found!"}
         </MKTypography>
 
@@ -54,33 +57,42 @@ export default class PlanningResult extends Component {
           width={150}
           style={{ marginBottom: 80, pointerEvents: "none" }}
         />
-
-        <MKTypography variant="h5">
-          <b>{"Algorithm: " + algorithm} </b>
-        </MKTypography>
-        <MKTypography variant="h5">
-          <b>{"Execution time: " + planningTime + " s"}</b>
-        </MKTypography>
-        <div className="path-detail">
-          {isSuccessful
-            ? paths.map((path, agentId) => {
-                console.log(path);
-                path = path.map((loc) => {
-                  var coordinate = this.decodeLocation(loc);
-                  return `(${coordinate.r},${coordinate.c})`;
-                });
-                var p = path.join("->");
-                return (
-                  <MKTypography variant="h5" key={agentId}>
-                    <b>
-                      <i>{"Agent " + (agentId + 1) + ": "}</i>
-                    </b>
-                    {p}
-                  </MKTypography>
-                );
-              })
-            : ""}
-        </div>
+        {isMemExceeded ? (
+          <MKTypography variant="h5">
+            To prevent the server from collapsing, each process is limited to use no more than 4GB
+            of memory, which should be sufficient for most cases. But if you see this message, it
+            means the MAPF instance you entered tried to use more than the 4GB limit.
+          </MKTypography>
+        ) : (
+          <div>
+            <MKTypography variant="h5">
+              <b>{"Algorithm: " + algorithm} </b>
+            </MKTypography>
+            <MKTypography variant="h5">
+              <b>{"Execution time: " + planningTime + " s"}</b>
+            </MKTypography>
+            <div className="path-detail">
+              {isSuccessful
+                ? paths.map((path, agentId) => {
+                    console.log(path);
+                    path = path.map((loc) => {
+                      var coordinate = this.decodeLocation(loc);
+                      return `(${coordinate.r},${coordinate.c})`;
+                    });
+                    var p = path.join("->");
+                    return (
+                      <MKTypography variant="h5" key={agentId}>
+                        <b>
+                          <i>{"Agent " + (agentId + 1) + ": "}</i>
+                        </b>
+                        {p}
+                      </MKTypography>
+                    );
+                  })
+                : ""}
+            </div>
+          </div>
+        )}
         <MKButton
           variant="gradient"
           color="secondary"

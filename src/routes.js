@@ -44,6 +44,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 
 // Pages
 import MAPFVisualizer from "MAPFVisualizer";
+import EECBSVisualizer from "EECBSVisualizer";
 import LAMAPFVisualizer from "LAMAPFVisualizer";
 import ClassicPaper from "pages/ClassicPaper";
 import { faBookOpenReader } from "@fortawesome/free-solid-svg-icons";
@@ -61,9 +62,13 @@ const routes = [
         collapse: [
           {
             name: "CBSH2-RTC",
-            route: "/classic-visualizer",
-            key: "classic-visualizer",
-            component: <MAPFVisualizer />,
+            route: "/classic-visualizer/CBSH2-RTC",
+            component: <MAPFVisualizer key="CBSH2-RTC" />,
+          },
+          {
+            name: "EECBS",
+            route: "/classic-visualizer/EECBS",
+            component: <EECBSVisualizer key="EECBS" />,
           },
         ],
       },
@@ -73,8 +78,7 @@ const routes = [
           {
             name: "MC-CBS",
             route: "/la-visualizer",
-            key: "la-visualizer",
-            component: <LAMAPFVisualizer />,
+            component: <LAMAPFVisualizer key="MC-CBS" />,
           },
         ],
       },

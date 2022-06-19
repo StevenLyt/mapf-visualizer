@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  Slider,
 } from "@mui/material";
 import MKTypography from "components/MKTypography";
 import MKBox from "components/MKBox";
@@ -29,8 +30,26 @@ import randomColor from "randomcolor";
 
 const DEFAULTROW = 8;
 const DEFAULTCOL = 15;
+const good = [
+  {
+    value: 0,
+    label: "0°C",
+  },
+  {
+    value: 20,
+    label: "20°C",
+  },
+  {
+    value: 37,
+    label: "37°C",
+  },
+  {
+    value: 100,
+    label: "100°C",
+  },
+];
 
-class MAPFVisualizer extends Component {
+class EECBSVisualizer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -66,18 +85,22 @@ class MAPFVisualizer extends Component {
       isDialogOpen: false,
       isAlgDialogOpen: false,
 
+      highLevelSolvers: ["A*", "A*eps", "EES", "NEW"],
       heuristics: ["Zero", "CG", "DG", "WDG"],
-      rectangleReasoning: ["None", "R", "RM", "GR", "Disjoint"],
-      corridorReasoning: ["None", "C", "PC", "STC", "GC", "Disjoint"],
+      inadmissibleHeuristics: ["Zero", "Global", "Path", "Local", "Conflict"],
+
+      whichSolver: 2,
       whichHeuristic: 3,
-      whichRectangle: 3,
-      whichCorridor: 4,
-      isBypass: true,
+      whichInadmissibleHeuristic: 1,
+      isSuboptimal: true,
+      suboptimality: 1.1,
       isPrioritizeConflict: true,
+      isBypass: true,
       isDisjointSplitting: false,
-      isMutex: false,
+      isRectangle: true,
+      isCorridor: true,
       isTarget: true,
-      isSIPP: false,
+
       algorithmSummary: "",
 
       startToAdd: false,
@@ -88,8 +111,7 @@ class MAPFVisualizer extends Component {
     };
   }
 
-  componentDidMount() {
-  }
+  componentDidMount() {}
 
   componentWillUnmount() {}
 
@@ -167,18 +189,21 @@ class MAPFVisualizer extends Component {
         walls: walls,
         agents: agents,
         heuristic: this.state.heuristics[this.state.whichHeuristic],
-        rectangle: this.state.rectangleReasoning[this.state.whichRectangle],
-        corridor: this.state.corridorReasoning[this.state.whichCorridor],
         isBypass: this.state.isBypass,
         isPrioritizeConflict: this.state.isPrioritizeConflict,
         isDisjointSplitting: this.state.isDisjointSplitting,
-        isMutex: this.state.isMutex,
         isTarget: this.state.isTarget,
-        isSIPP: this.state.isSIPP,
+        solver: this.state.highLevelSolvers[this.state.whichSolver],
+        inadmissibleHeuristic:
+          this.state.inadmissibleHeuristics[this.state.whichInadmissibleHeuristic],
+        isSuboptimal: this.state.isSuboptimal,
+        suboptimality: this.state.suboptimality,
+        isRectangle: this.state.isRectangle,
+        isCorridor: this.state.isCorridor,
       }),
     };
     // fetch("http://localhost:8080/MAPF", req)
-    fetch("http://34.125.119.104:8080/MAPF", req)
+    fetch("http://34.125.119.104:8080/EECBS", req)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
@@ -212,6 +237,7 @@ class MAPFVisualizer extends Component {
           setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
         } else if (data.status === -1) {
         } else if (data.status === -2) {
+        } else if (data.status === -5) {
         }
       });
   }
@@ -430,15 +456,17 @@ class MAPFVisualizer extends Component {
         planningTime: -1,
         planningStatus: "",
         paths: [],
+        whichSolver: 2,
         whichHeuristic: 3,
-        whichRectangle: 3,
-        whichCorridor: 4,
-        isBypass: true,
+        whichInadmissibleHeuristic: 1,
+        isSuboptimal: true,
+        suboptimality: 1.1,
         isPrioritizeConflict: true,
+        isBypass: true,
         isDisjointSplitting: false,
-        isMutex: false,
+        isRectangle: true,
+        isCorridor: true,
         isTarget: true,
-        isSIPP: false,
         algorithmSummary: "",
 
         startToAdd: false,
@@ -501,11 +529,11 @@ class MAPFVisualizer extends Component {
                   </MKTypography>
                   <MKTypography variant="body2" mb={1}>
                     2. The MAPF variant you choose is <b>classic MAPF</b>, and the algorithm you
-                    choose is <b>CBSH2-RTC</b>. The available improvement techniques include:{" "}
+                    choose is <b>EECBS</b>. The available improvement techniques include:{" "}
                     <b>
-                      High-level admissible heuristics, Prioritizing conflict, Rectangle reasoning,
-                      Corridor reasoning, Bypassing conflict, Disjoint splitting, Mutex propagation,
-                      Target reasoning, SIPP
+                      High-level admissible heuristics, High-level solvers, Suboptimal solver,
+                      Inadmissible heuristics, Prioritizing conflict, Rectangle reasoning, Corridor
+                      reasoning, Bypassing conflict, Disjoint splitting, Target reasoning.
                     </b>
                     .
                   </MKTypography>
@@ -691,7 +719,7 @@ class MAPFVisualizer extends Component {
                                 py={2}
                                 px={2}
                               >
-                                <MKTypography variant="h4">CBS improvement techniques</MKTypography>
+                                <MKTypography variant="h4">Improvement techniques</MKTypography>
                               </MKBox>
                               <Divider dark="true" sx={{ my: 0 }} />
                               <MKBox px={2}>
@@ -699,9 +727,12 @@ class MAPFVisualizer extends Component {
                                 <RadioGroup
                                   row
                                   value={this.state.whichHeuristic}
-                                  onChange={(e) =>
-                                    this.setState({ whichHeuristic: e.target.value })
-                                  }
+                                  onChange={(e) => {
+                                    this.setState({ whichHeuristic: e.target.value });
+                                    if (e.target.value == 1 || e.target.value == 2) {
+                                      this.setState({ isSuboptimal: false });
+                                    }
+                                  }}
                                 >
                                   {this.state.heuristics.map((heuristic, id) => {
                                     return (
@@ -716,15 +747,18 @@ class MAPFVisualizer extends Component {
                                 </RadioGroup>
                               </MKBox>
                               <MKBox px={2}>
-                                <MKTypography variant="h6">Rectangle reasoning</MKTypography>
+                                <MKTypography variant="h6">High-level solver</MKTypography>
                                 <RadioGroup
                                   row
-                                  value={this.state.whichRectangle}
-                                  onChange={(e) =>
-                                    this.setState({ whichRectangle: e.target.value })
-                                  }
+                                  value={this.state.whichSolver}
+                                  onChange={(e) => {
+                                    this.setState({ whichSolver: e.target.value });
+                                    if (e.target.value == 0) {
+                                      this.setState({ isSuboptimal: false });
+                                    }
+                                  }}
                                 >
-                                  {this.state.rectangleReasoning.map((a, id) => {
+                                  {this.state.highLevelSolvers.map((a, id) => {
                                     return (
                                       <FormControlLabel
                                         key={id}
@@ -737,13 +771,15 @@ class MAPFVisualizer extends Component {
                                 </RadioGroup>
                               </MKBox>
                               <MKBox px={2}>
-                                <MKTypography variant="h6">Corridor reasoning</MKTypography>
+                                <MKTypography variant="h6">Inadmissible heuristics</MKTypography>
                                 <RadioGroup
                                   row
-                                  value={this.state.whichCorridor}
-                                  onChange={(e) => this.setState({ whichCorridor: e.target.value })}
+                                  value={this.state.whichInadmissibleHeuristic}
+                                  onChange={(e) =>
+                                    this.setState({ whichInadmissibleHeuristic: e.target.value })
+                                  }
                                 >
-                                  {this.state.corridorReasoning.map((a, id) => {
+                                  {this.state.inadmissibleHeuristics.map((a, id) => {
                                     return (
                                       <FormControlLabel
                                         key={id}
@@ -803,12 +839,14 @@ class MAPFVisualizer extends Component {
                               <MKBox px={2}>
                                 <Grid container>
                                   <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">Mutex propagation</MKTypography>
+                                    <MKTypography variant="h6">Rectangle reasoning</MKTypography>
                                   </Grid>
                                   <Grid item container xs={12} md={7} alignItems="center">
                                     <Switch
-                                      checked={this.state.isMutex}
-                                      onChange={(e) => this.setState({ isMutex: e.target.checked })}
+                                      checked={this.state.isRectangle}
+                                      onChange={(e) =>
+                                        this.setState({ isRectangle: e.target.checked })
+                                      }
                                     />
                                   </Grid>
                                 </Grid>
@@ -831,16 +869,74 @@ class MAPFVisualizer extends Component {
                               <MKBox px={2}>
                                 <Grid container>
                                   <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">SIPP</MKTypography>
+                                    <MKTypography variant="h6">Corridor reasoning</MKTypography>
                                   </Grid>
                                   <Grid item container xs={12} md={7} alignItems="center">
                                     <Switch
-                                      checked={this.state.isSIPP}
-                                      onChange={(e) => this.setState({ isSIPP: e.target.checked })}
+                                      checked={this.state.isCorridor}
+                                      onChange={(e) =>
+                                        this.setState({ isCorridor: e.target.checked })
+                                      }
                                     />
                                   </Grid>
                                 </Grid>
                               </MKBox>
+
+                              <MKBox px={2}>
+                                <Grid container>
+                                  <Grid item container xs={12} md={5} alignItems="center">
+                                    <MKTypography variant="h6">Suboptimal solver</MKTypography>
+                                  </Grid>
+                                  <Grid item container xs={12} md={7} alignItems="center">
+                                    <Switch
+                                      checked={this.state.isSuboptimal}
+                                      onChange={(e) => {
+                                        if (
+                                          this.state.whichHeuristic != 1 &&
+                                          this.state.whichHeuristic != 2 &&
+                                          this.state.whichSolver != 0
+                                        ) {
+                                          this.setState({ isSuboptimal: e.target.checked });
+                                        }
+                                      }}
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </MKBox>
+
+                              {this.state.isSuboptimal && (
+                                <MKBox px={2}>
+                                  <Grid container justifyContent="center">
+                                    <Grid item container xs={12} md={11} alignItems="center">
+                                      <Slider
+                                        aria-label="Custom marks"
+                                        getAriaValueText={(value) => {
+                                          return value;
+                                        }}
+                                        step={0.001}
+                                        min={1}
+                                        max={1.2}
+                                        valueLabelDisplay="auto"
+                                        color="secondary"
+                                        value={this.state.suboptimality}
+                                        marks={[
+                                          {
+                                            value: 1,
+                                            label: "1",
+                                          },
+                                          {
+                                            value: 1.2,
+                                            label: "1.2",
+                                          },
+                                        ]}
+                                        onChange={(e) => {
+                                          this.setState({ suboptimality: e.target.value });
+                                        }}
+                                      />
+                                    </Grid>
+                                  </Grid>
+                                </MKBox>
+                              )}
 
                               <Divider light sx={{ my: 0 }} />
                               <MKBox display="flex" justifyContent="right" py={2} px={1.5}>
@@ -1120,4 +1216,4 @@ class MAPFVisualizer extends Component {
     );
   }
 }
-export default MAPFVisualizer;
+export default EECBSVisualizer;

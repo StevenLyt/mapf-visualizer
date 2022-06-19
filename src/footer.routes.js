@@ -46,8 +46,8 @@ export default {
     {
       name: "Powered by",
       items: [
-        { name: "Material Kit 2", href: "https://yutongli.me" },
-        { name: "MUI", href: "mailto:yli81711@usc.edu" },
+        { name: "Material Kit 2", href: "https://demos.creative-tim.com/material-kit-pro-react" },
+        { name: "MUI", href: "https://mui.com" },
       ],
     },
   ],
