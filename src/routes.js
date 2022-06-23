@@ -99,12 +99,12 @@ const routes = [
     name: "Guide",
     icon: <FontAwesomeIcon icon={faChalkboardUser} />,
     collapse: [
-      {
-        name: "migration",
-        description: "Create a visualizer for your MAPF algorithm",
-        route: "/guide/migration",
-        component: <Guide />,
-      },
+      // {
+      //   name: "migration",
+      //   description: "Create a visualizer for your MAPF algorithm",
+      //   route: "/guide/migration",
+      //   component: <Guide />,
+      // },
       {
         name: "map",
         description: "Format of map input file",
