@@ -109,7 +109,7 @@ CenteredFooter.defaultProps = {
   company: { href: "https://yutongli.me", name: "Yutong Li" },
   links: [
     { href: "https://yutongli.me", name: "About me" },
-    { href: "http://mapf.info", name: "Related papers" },
+    { href: "/papers", name: "Related papers" },
     { href: "http://mapf.info", name: "MAPF info" },
     { href: "https://movingai.com/benchmarks/mapf/index.html", name: "Benchmarks" },
     // { href: "https://www.creative-tim.com/license", name: "License" },

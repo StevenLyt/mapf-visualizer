@@ -24,7 +24,7 @@ function ClassicPaper() {
     <>
       <DefaultNavbar routes={routes} transparent light />
       <MKBox
-        minHeight="55vh"
+        minHeight="45vh"
         width="100%"
         bgColor="dark"
         sx={{
@@ -57,7 +57,7 @@ function ClassicPaper() {
               Research papers on MAPF
             </MKTypography>
             <MKTypography variant="body1" color="white" opacity={0.8} mt={1} mb={3}>
-              We list all the research papers that the visualizers are built upon.
+              <i>The research papers that the visualizers are built upon</i>
             </MKTypography>
             {/* <MKButton color="default" sx={{ color: ({ palette: { dark } }) => dark.main }}>
               create account
@@ -94,6 +94,14 @@ function ClassicPaper() {
                   Jiaoyang Li, Daniel Harabor, Peter J. Stuckey, Hang Ma, Graeme Gange and Sven
                   Koenig. <br />
                   <em>Artificial Intelligence (AIJ), vol 301, pages 103574, 2021.</em>
+                </MKTypography>
+                <MKTypography variant="h4">EECBS</MKTypography>
+                <MKTypography variant="body1" my={2}>
+                  EECBS: Bounded-Suboptimal Search for Multi-Agent Path Finding. <br />
+                  Jiaoyang Li, Wheeler Ruml and Sven Koenig。 <br />
+                  <em>
+                    AAAI Conference on Artificial Intelligence (AAAI), pages 12353-12362, 2021.
+                  </em>
                 </MKTypography>
                 <MKTypography variant="h4">High-level heuristics</MKTypography>
                 <MKTypography variant="body1" my={2}>

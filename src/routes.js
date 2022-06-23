@@ -47,7 +47,9 @@ import MAPFVisualizer from "MAPFVisualizer";
 import EECBSVisualizer from "EECBSVisualizer";
 import LAMAPFVisualizer from "LAMAPFVisualizer";
 import ClassicPaper from "pages/ClassicPaper";
-import { faBookOpenReader } from "@fortawesome/free-solid-svg-icons";
+import Guide from "pages/Guide";
+import MapFormat from "pages/Guide/MapFormat";
+import { faBookOpenReader, faChalkboardUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const routes = [
@@ -92,6 +94,24 @@ const routes = [
     route: "/papers",
     key: "papers",
     component: <ClassicPaper />,
+  },
+  {
+    name: "Guide",
+    icon: <FontAwesomeIcon icon={faChalkboardUser} />,
+    collapse: [
+      {
+        name: "migration",
+        description: "Create a visualizer for your MAPF algorithm",
+        route: "/guide/migration",
+        component: <Guide />,
+      },
+      {
+        name: "map",
+        description: "Format of map input file",
+        route: "/guide/map",
+        component: <MapFormat />,
+      },
+    ],
   },
   {
     name: "more MAPF",

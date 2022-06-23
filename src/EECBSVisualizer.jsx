@@ -20,34 +20,20 @@ import {
   Radio,
   RadioGroup,
   Slider,
+  Menu,
+  Icon,
+  MenuItem,
 } from "@mui/material";
 import MKTypography from "components/MKTypography";
 import MKBox from "components/MKBox";
 import MKInput from "components/MKInput";
+import UploadMap from "components/UploadMap";
 import MKButton from "components/MKButton";
 
 import randomColor from "randomcolor";
 
 const DEFAULTROW = 8;
 const DEFAULTCOL = 15;
-const good = [
-  {
-    value: 0,
-    label: "0°C",
-  },
-  {
-    value: 20,
-    label: "20°C",
-  },
-  {
-    value: 37,
-    label: "37°C",
-  },
-  {
-    value: 100,
-    label: "100°C",
-  },
-];
 
 class EECBSVisualizer extends Component {
   constructor(props) {
@@ -109,6 +95,22 @@ class EECBSVisualizer extends Component {
       addedSRowClick: null,
       addedSColClick: null,
     };
+  }
+
+  adjustMap(height, width, map) {
+    console.log("adjustMap");
+    console.log(height, width);
+    this.setState({
+      numRow: height,
+      numCol: width,
+      map: map,
+      agents: [],
+      numAgents: 0,
+      startToAdd: false,
+      goalToAdd: false,
+      addedSRowClick: null,
+      addedSColClick: null,
+    });
   }
 
   componentDidMount() {}
@@ -290,10 +292,6 @@ class EECBSVisualizer extends Component {
     if (error) return;
     this.addAgentToMap();
   }
-
-  // handleDeleteAgent(e) {
-  //   console.log("color");
-  // }
 
   handleAddAgentByClick() {
     const color = randomColor();
@@ -1003,7 +1001,9 @@ class EECBSVisualizer extends Component {
                         </Grid>
                       </Grid>
                     </Grid>
-
+                    <UploadMap
+                      adjustMap={(height, width, map) => this.adjustMap(height, width, map)}
+                    />
                     <Grid
                       container
                       item
@@ -1026,7 +1026,6 @@ class EECBSVisualizer extends Component {
                       sx={{ mx: "auto" }}
                       justifyContent="center"
                     >
-                      {" "}
                       <Grid item xs={12} md={10} mb={2}>
                         <MKTypography variant="body2" textAlign="center">
                           To add an agent, first click this button, then click the start location
@@ -1046,152 +1045,6 @@ class EECBSVisualizer extends Component {
                           add agent
                         </MKButton>
                       </Grid>
-                      {/* <form onSubmit={(e) => this.handleAddAgent(e)}>
-                        <Grid container spacing={1}>
-                          <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth
-                              required
-                              id="add-start-row"
-                              label="Start row index"
-                              color="secondary"
-                              type="number"
-                              sx={{ mr: 1 }}
-                              onChange={(e) => {
-                                this.setState({ addedSRow: parseInt(e.target.value) });
-                              }}
-                              error={
-                                this.state.addedSRow >= this.state.numRow ||
-                                this.state.addedSRow < 0
-                              }
-                              value={
-                                this.state.addedSRow || this.state.addedSRow === 0
-                                  ? this.state.addedSRow
-                                  : ""
-                              }
-                              helperText={
-                                this.state.addedSRow >= this.state.numRow ||
-                                this.state.addedSRow < 0
-                                  ? "row index out of range"
-                                  : " "
-                              }
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth
-                              required
-                              id="add-start-col"
-                              label="Start column index"
-                              color="secondary"
-                              type="number"
-                              onChange={(e) => {
-                                this.setState({ addedSCol: parseInt(e.target.value) });
-                              }}
-                              error={
-                                this.state.addedSCol >= this.state.numCol ||
-                                this.state.addedSCol < 0
-                              }
-                              value={
-                                this.state.addedSCol || this.state.addedSCol === 0
-                                  ? this.state.addedSCol
-                                  : ""
-                              }
-                              helperText={
-                                this.state.addedSCol >= this.state.numCol ||
-                                this.state.addedSCol < 0
-                                  ? "column index out of range"
-                                  : " "
-                              }
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth
-                              required
-                              id="add-goal-row"
-                              label="Goal row index"
-                              color="secondary"
-                              type="number"
-                              sx={{ mr: 1 }}
-                              onChange={(e) => {
-                                this.setState({ addedGRow: parseInt(e.target.value) });
-                              }}
-                              error={
-                                this.state.addedGRow >= this.state.numRow ||
-                                this.state.addedGRow < 0
-                              }
-                              value={
-                                this.state.addedGRow || this.state.addedGRow === 0
-                                  ? this.state.addedGRow
-                                  : ""
-                              }
-                              helperText={
-                                this.state.addedGRow >= this.state.numRow ||
-                                this.state.addedGRow < 0
-                                  ? "row index out of range"
-                                  : " "
-                              }
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth
-                              required
-                              id="add-goal-col"
-                              label="Goal column index"
-                              color="secondary"
-                              type="number"
-                              onChange={(e) => {
-                                this.setState({ addedGCol: parseInt(e.target.value) });
-                              }}
-                              error={
-                                this.state.addedGCol >= this.state.numCol ||
-                                this.state.addedGCol < 0
-                              }
-                              value={
-                                this.state.addedGCol || this.state.addedGCol === 0
-                                  ? this.state.addedGCol
-                                  : ""
-                              }
-                              helperText={
-                                this.state.addedGCol >= this.state.numCol ||
-                                this.state.addedGCol < 0
-                                  ? "column index out of range"
-                                  : " "
-                              }
-                            />
-                          </Grid>
-
-                          <Grid item xs={12} md={12}>
-                            <MKButton
-                              variant="gradient"
-                              color="info"
-                              type="submit"
-                              startIcon={<AddIcon />}
-                              fullWidth
-                            >
-                              add agent
-                            </MKButton>
-                          </Grid>
-
-                          <Snackbar
-                            open={this.state.snackbarOpen}
-                            autoHideDuration={1000}
-                            onClose={(event, reason) => this.handleCloseSnackbar(event, reason)}
-                          >
-                            <Alert
-                              onClose={(event, reason) => this.handleCloseSnackbar(event, reason)}
-                              severity={this.state.isError ? "error" : "success"}
-                              sx={{ width: "100%" }}
-                            >
-                              {this.state.isError
-                                ? "Position already taken!"
-                                : "Successfully added!"}
-                            </Alert>
-                          </Snackbar>
-                        </Grid>
-                      </form> */}
                     </Grid>
                     <Grid container item xs={12} lg={10} mt={3} sx={{ mx: "auto" }}>
                       <Grid item xs={12} md={12}>

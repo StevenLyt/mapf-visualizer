@@ -20,6 +20,7 @@ import MKTypography from "components/MKTypography";
 import MKBox from "components/MKBox";
 import MKInput from "components/MKInput";
 import MKButton from "components/MKButton";
+import UploadMap from "components/UploadMap";
 
 import randomColor from "randomcolor";
 
@@ -68,6 +69,23 @@ class LAMAPFVisualizer extends Component {
     };
   }
 
+  adjustMap(height, width, map) {
+    console.log("adjustMap");
+    console.log(height, width);
+    this.setState({
+      numRow: height,
+      numCol: width,
+      map: map,
+      agents: [],
+      numAgents: 0,
+      addedSRow: null,
+      addedSCol: null,
+      addedGRow: null,
+      addedGCol: null,
+      addedHeight: null,
+      addedWidth: null,
+    });
+  }
   componentDidMount() {}
 
   componentWillUnmount() {}
@@ -233,38 +251,16 @@ class LAMAPFVisualizer extends Component {
     let t = parseInt(e.target.value);
     t = t > 30 ? 30 : t < 4 ? 4 : t;
     t = Math.min(t, this.state.numCol);
-    this.setState({
-      tempRow: t,
-      numRow: t,
-      map: this.createEmptyMap(t, this.state.numCol),
-      agents: [],
-      numAgents: 0,
-      addedSRow: null,
-      addedSCol: null,
-      addedGRow: null,
-      addedGCol: null,
-      addedHeight: null,
-      addedWidth: null,
-    });
+    this.setState({ tempRow: t });
+    this.adjustMap(t, this.state.numCol, this.createEmptyMap(t, this.state.numCol));
   }
 
   changeMapCol(e) {
     let t = parseInt(e.target.value);
     t = t > 30 ? 30 : t < 4 ? 4 : t;
     t = Math.max(t, this.state.numRow);
-    this.setState({
-      tempCol: t,
-      numCol: t,
-      map: this.createEmptyMap(this.state.numRow, t),
-      agents: [],
-      numAgents: 0,
-      addedSRow: null,
-      addedSCol: null,
-      addedGRow: null,
-      addedGCol: null,
-      addedHeight: null,
-      addedWidth: null,
-    });
+    this.setState({ tempCol: t });
+    this.adjustMap(this.state.numRow, t, this.createEmptyMap(this.state.numRow, t));
   }
 
   handleAddAgent(e) {
@@ -494,6 +490,11 @@ class LAMAPFVisualizer extends Component {
                   <MKTypography variant="body2" mb={1}>
                     3. In <b>Large Agent MAPF</b>, we denote the location of an agent by the
                     coordinate of its top-left grid.
+                  </MKTypography>
+                  <MKTypography variant="body2" mb={1}>
+                    4. When you use <b>Mutex Propagation</b>, please make sure all agents are no
+                    smaller than <b>2x2</b>. Agent with height or width of 1 is currently not
+                    supported.
                   </MKTypography>
                 </MKBox>
                 <Divider light sx={{ my: 0 }} />
@@ -758,7 +759,9 @@ class LAMAPFVisualizer extends Component {
                         </Grid>
                       </Grid>
                     </Grid>
-
+                    <UploadMap
+                      adjustMap={(height, width, map) => this.adjustMap(height, width, map)}
+                    />
                     <Grid
                       container
                       item
@@ -940,7 +943,7 @@ class LAMAPFVisualizer extends Component {
 
                           <Snackbar
                             open={this.state.snackbarOpen}
-                            autoHideDuration={1000}
+                            autoHideDuration={1100}
                             onClose={(event, reason) => this.handleCloseSnackbar(event, reason)}
                           >
                             <Alert

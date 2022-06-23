@@ -44,6 +44,8 @@ This website offers a much more intuitive experience. Users will be able to:
     - corridor reasoning and corridor-target reasoning
     - mutex propagation
   - Disjoint splitting
+- EECBS by Jiaoyang Li.
+  This is a bounded-suboptimal solver based on CBS. It speeds up CBS by using Explicit Estimation Search (EES) on its high level and focal search on its low level.
 
 #### 2. Large agent MAPF
 
