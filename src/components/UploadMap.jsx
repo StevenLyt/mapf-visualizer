@@ -19,7 +19,7 @@ export default class UploadMap extends Component {
 
   closeDropdown(map) {
     this.setState({ isDropdownOpen: null });
-    var map = require("../assets/maps/" + map);
+    map = require("../assets/maps/" + map).default;
     fetch(map)
       .then((r) => r.text())
       .then((text) => this.parseMap(text));

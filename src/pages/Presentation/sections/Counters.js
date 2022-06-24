@@ -20,9 +20,8 @@ import Divider from "@mui/material/Divider";
 
 // Material Kit 2 React components
 import MKBox from "components/MKBox";
+import MKButton from "components/MKButton";
 import MKTypography from "components/MKTypography";
-// Material Kit 2 React examples
-import DefaultCounterCard from "examples/Cards/CounterCards/DefaultCounterCard";
 
 function Counters() {
   return (
@@ -45,27 +44,69 @@ function Counters() {
       <Container>
         <Grid container item xs={12} lg={12} sx={{ mx: "auto" }}>
           <Grid item xs={12} md={4}>
-            <DefaultCounterCard
-              title="Classic MAPF"
-              path="/classic-visualizer"
-              description="Agents only occupies a single point"
-            />
+            <MKBox p={2} textAlign="center" lineHeight={1}>
+              <MKTypography variant="h5" mt={2} mb={1}>
+                Classic MAPF
+              </MKTypography>
+              <MKTypography variant="body2" color="text">
+                Agents only occupy a single point
+              </MKTypography>
+              <MKButton
+                color="info"
+                size="medium"
+                variant="outlined"
+                href="/classic-visualizer/CBSH2-RTC"
+                component="a"
+                sx={{ mt: 5 }}
+              >
+                Get started
+              </MKButton>
+            </MKBox>
           </Grid>
           <Grid item xs={12} md={4}>
             <Divider orientation="vertical" sx={{ display: { xs: "none", md: "block" }, mx: 0 }} />
-            <DefaultCounterCard
-              title="MAPF with Large Agents"
-              path="/la-visualizer"
-              description="Agents may have a two-dimensional shape"
-            />
+            <MKBox p={2} textAlign="center" lineHeight={1}>
+              <MKTypography variant="h5" mt={2} mb={1}>
+                MAPF with Large Agents
+              </MKTypography>
+              <MKTypography variant="body2" color="text">
+                Agents may have a two-dimensional height and width
+              </MKTypography>
+              <MKButton
+                color="info"
+                size="medium"
+                variant="outlined"
+                href="/la-visualizer"
+                component="a"
+                sx={{ mt: 5 }}
+              >
+                Get started
+              </MKButton>
+            </MKBox>
             <Divider orientation="vertical" sx={{ display: { xs: "none", md: "block" }, ml: 0 }} />
           </Grid>
           <Grid item xs={12} md={4}>
-            <DefaultCounterCard
-              title="Robust MAPF"
-              path="/robust-visualizer"
-              description="Agent may have an action delay"
-            />
+            <MKBox p={2} textAlign="center" lineHeight={1}>
+              <MKTypography variant="h5" mt={2} mb={1}>
+                Robust MAPF
+              </MKTypography>
+              <MKTypography variant="body2" color="text">
+                Agents may have an action delay
+              </MKTypography>
+              <MKButton
+                color="secondary"
+                size="medium"
+                variant="outlined"
+                href="/robust-visualizer"
+                component="a"
+                sx={{
+                  mt: 5,
+                  pointerEvents: "none",
+                }}
+              >
+                Coming soon
+              </MKButton>
+            </MKBox>
           </Grid>
         </Grid>
       </Container>
