@@ -36,9 +36,6 @@ export default function SingleGrid(props) {
   var isTopLeft = row === -1;
   const content = (isStart ? "S_" : "") + (isGoal ? "G_" : "") + (agentId > 0 ? agentId : " ");
 
-  if (isWall) {
-    // console.log("isWall");
-  }
   return (
     <Grid
       item
@@ -60,9 +57,15 @@ export default function SingleGrid(props) {
         userDrag: "none",
       }}
     >
-      {/* <MKTypography sx={{ userSelect: "none" }}> */}
-      {isPlanned || isTopLeft ? "" : isLabel ? <em>{row}</em> : <InlineMath math={content} />}
-      {/* </MKTypography> */}
+      {isPlanned && isStart ? (
+        <InlineMath math={agentId.toString()} />
+      ) : isPlanned || isTopLeft ? (
+        ""
+      ) : isLabel ? (
+        <em>{row}</em>
+      ) : (
+        <InlineMath math={content} />
+      )}
     </Grid>
   );
 }

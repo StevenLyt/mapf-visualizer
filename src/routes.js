@@ -51,6 +51,7 @@ import Guide from "pages/Guide";
 import MapFormat from "pages/Guide/MapFormat";
 import { faBookOpenReader, faChalkboardUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { CBSH2RTC, EECBS } from "Populate";
 
 const routes = [
   {
@@ -65,12 +66,12 @@ const routes = [
           {
             name: "CBSH2-RTC",
             route: "/classic-visualizer/CBSH2-RTC",
-            component: <MAPFVisualizer key="CBSH2-RTC" />,
+            component: <MAPFVisualizer key="CBSH2-RTC" populate={CBSH2RTC} />,
           },
           {
             name: "EECBS",
             route: "/classic-visualizer/EECBS",
-            component: <EECBSVisualizer key="EECBS" />,
+            component: <MAPFVisualizer key="EECBS" populate={EECBS} />,
           },
         ],
       },

@@ -1,5 +1,7 @@
 import { Component } from "react";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import Button from "@mui/material/Button";
 import MKTypography from "components/MKTypography";
 import Container from "@mui/material/Container";
@@ -18,7 +20,7 @@ export default class PlanningResult extends Component {
   }
 
   render() {
-    const { algorithm, status, planningTime, paths, startNew, isDisabled } = this.props;
+    const { algorithm, status, planningTime, paths, startNew, replay, isDisabled } = this.props;
     var isSuccessful = status >= 0;
     var isMemExceeded = status == -5;
     console.log(status);
@@ -43,7 +45,6 @@ export default class PlanningResult extends Component {
             ? "Memory exceeded"
             : "No solution found!"}
         </MKTypography>
-
         <Lottie
           options={{
             loop: false,
@@ -93,6 +94,22 @@ export default class PlanningResult extends Component {
             </div>
           </div>
         )}
+        {isSuccessful ? (
+          <MKButton
+            variant="gradient"
+            color="info"
+            startIcon={<PlayCircleOutlineIcon />}
+            onClick={() => replay()}
+            disabled={isSuccessful && isDisabled}
+            sx={{
+              mt: 7,
+            }}
+          >
+            Replay
+          </MKButton>
+        ) : (
+          ""
+        )}
         <MKButton
           variant="gradient"
           color="secondary"
@@ -100,7 +117,7 @@ export default class PlanningResult extends Component {
           onClick={() => startNew()}
           disabled={isSuccessful && isDisabled}
           sx={{
-            mt: 7,
+            mt: 2,
           }}
         >
           Start over

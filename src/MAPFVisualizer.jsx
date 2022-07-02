@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import SingleGrid from "components/Grid";
 import LoadingAnimation from "components/LoadingAnimation";
 import PlanningResult from "components/PlanningResult";
 import BaseLayout from "layouts/sections/components/BaseLayout";
 import {
-  Alert,
   Slide,
   Modal,
   Grid,
@@ -16,8 +16,8 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  MenuItem,
-  Icon,
+  Slider,
+  Typography,
 } from "@mui/material";
 import MKTypography from "components/MKTypography";
 import MKBox from "components/MKBox";
@@ -65,18 +65,6 @@ class MAPFVisualizer extends Component {
       isDialogOpen: false,
       isAlgDialogOpen: false,
 
-      heuristics: ["Zero", "CG", "DG", "WDG"],
-      rectangleReasoning: ["None", "R", "RM", "GR", "Disjoint"],
-      corridorReasoning: ["None", "C", "PC", "STC", "GC", "Disjoint"],
-      whichHeuristic: 3,
-      whichRectangle: 3,
-      whichCorridor: 4,
-      isBypass: true,
-      isPrioritizeConflict: true,
-      isDisjointSplitting: false,
-      isMutex: false,
-      isTarget: true,
-      isSIPP: false,
       algorithmSummary: "",
 
       startToAdd: false,
@@ -84,12 +72,15 @@ class MAPFVisualizer extends Component {
       colorToAdd: "",
       addedSRowClick: null,
       addedSColClick: null,
+      toDelete: false,
+
+      name: this.props.populate.name,
+      options: structuredClone(this.props.populate.options),
+      description: this.props.populate.description,
     };
   }
 
   adjustMap(height, width, map) {
-    console.log("adjustMap");
-    console.log(height, width);
     this.setState({
       numRow: height,
       numCol: width,
@@ -145,12 +136,11 @@ class MAPFVisualizer extends Component {
     // change agents to border
     this.state.agents.forEach((agent) => {
       var color = agent.color;
-      document.getElementById(`grid-${agent.SR}-${agent.SC}`).style.backgroundColor = "#fff";
       document.getElementById(`grid-${agent.SR}-${agent.SC}`).style.border = `4px solid ${color}`;
-      document.getElementById(`grid-${agent.GR}-${agent.GC}`).style.backgroundColor = "#fff";
       document.getElementById(`grid-${agent.GR}-${agent.GC}`).style.border = `4px solid ${color}`;
     });
 
+    // delay 1s before showing animation
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     var walls = [];
@@ -169,65 +159,73 @@ class MAPFVisualizer extends Component {
       });
     });
 
+    var data = { row: this.state.numRow, col: this.state.numCol, walls: walls, agents: agents };
+    let options = this.state.options;
+    for (let key in options) {
+      data[key] =
+        typeof options[key].options[0] === "number"
+          ? options[key].value
+          : options[key].options[options[key].value];
+    }
+    console.log(data);
     const req = {
       method: "POST",
       headers: {
         // Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        row: this.state.numRow,
-        col: this.state.numCol,
-        walls: walls,
-        agents: agents,
-        heuristic: this.state.heuristics[this.state.whichHeuristic],
-        rectangle: this.state.rectangleReasoning[this.state.whichRectangle],
-        corridor: this.state.corridorReasoning[this.state.whichCorridor],
-        isBypass: this.state.isBypass,
-        isPrioritizeConflict: this.state.isPrioritizeConflict,
-        isDisjointSplitting: this.state.isDisjointSplitting,
-        isMutex: this.state.isMutex,
-        isTarget: this.state.isTarget,
-        isSIPP: this.state.isSIPP,
-      }),
+      body: JSON.stringify(data),
     };
     // fetch("http://localhost:8080/MAPF", req)
-    fetch("http://34.125.119.104:8080/MAPF", req)
+    fetch("http://34.125.119.104:8080/" + this.state.name, req)
       .then((response) => response.json())
       .then((data) => {
-        this.setState({
-          isPlanning: false,
-          isPlanned: true,
-          algorithmSummary: data.algorithm,
-          planningTime: data.time,
-          planningStatus: data.status,
-          paths: data.paths,
-        });
-        if (data.status >= 0) {
-          var finishTime = 0;
-          data.paths.forEach((path, agentId) => {
-            finishTime = Math.max(finishTime, path.length);
-            var color = this.state.agents[agentId].color;
-            for (let t = 0; t < path.length; t++) {
-              var l = this.decodeLocation(parseInt(path[t]));
-              let i = l.r;
-              let j = l.c;
-              setTimeout(() => {
-                document.getElementById(`grid-${i}-${j}`).style.backgroundColor = color;
-                document.getElementById(`grid-${i}-${j}`).style.border = "";
-              }, 1000 * t);
-              if (t < path.length - 1) {
-                setTimeout(() => {
-                  document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "#ffffff";
-                }, 1000 * (t + 0.999));
-              }
+        this.setState(
+          {
+            isPlanning: false,
+            isPlanned: true,
+            algorithmSummary: data.algorithm,
+            planningTime: data.time,
+            planningStatus: data.status,
+            paths: data.paths,
+          },
+          () => {
+            if (data.status >= 0) {
+              this.playAnimation();
             }
-          });
-          setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
-        } else if (data.status === -1) {
-        } else if (data.status === -2) {
-        }
+          }
+        );
       });
+  }
+
+  playAnimation() {
+    this.setState({ isAnimationFinished: false });
+    var finishTime = 0;
+    const paths = this.state.paths;
+    for (var t = 0; t < paths.length; t++) {
+      finishTime = Math.max(finishTime, paths[t].length);
+    }
+    for (let t = 0; t < finishTime; t++) {
+      setTimeout(() => {
+        let map = this.state.map;
+        console.log(map);
+        for (let i = 0; i < map.length; i++) {
+          for (let j = 0; j < map[i].length; j++) {
+            map[i][j].isStart = false;
+            map[i][j].agent = -1;
+            map[i][j].color = "";
+          }
+        }
+        for (let i = 0; i < paths.length; i++) {
+          let loc = this.decodeLocation(paths[i][paths[i].length > t ? t : paths[i].length - 1]);
+          map[loc.r][loc.c].isStart = true;
+          map[loc.r][loc.c].agent = i + 1;
+          map[loc.r][loc.c].color = this.state.agents[i].color;
+        }
+        this.setState({ map: map });
+      }, 1000 * t);
+    }
+    setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
   }
 
   changeMapRow(e) {
@@ -282,6 +280,10 @@ class MAPFVisualizer extends Component {
     });
   }
 
+  removeAgent() {
+    this.setState({ toDelete: true });
+  }
+
   showSnackbar(color) {
     if (!this.state.isError) this.addAgent(color);
     this.setState({ snackbarOpen: true });
@@ -332,7 +334,32 @@ class MAPFVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
-    if (this.state.startToAdd) {
+    if (this.state.toDelete) {
+      let agentToDelete = this.state.map[row][col].agent;
+      let agents = this.state.agents;
+      agents.splice(agentToDelete - 1, 1);
+      let map = this.state.map;
+      for (let i = 0; i < map.length; i++) {
+        for (let j = 0; j < map[i].length; j++) {
+          if (!map[i][j].isWall) {
+            map[i][j].isStart = false;
+            map[i][j].isGoal = false;
+            map[i][j].agent = -1;
+            map[i][j].color = "";
+          }
+        }
+      }
+      for (let i = 0; i < agents.length; i++) {
+        let agent = agents[i];
+        map[agent.SR][agent.SC].isStart = true;
+        map[agent.SR][agent.SC].agent = i + 1;
+        map[agent.SR][agent.SC].color = agent.color;
+        map[agent.GR][agent.GC].isGoal = true;
+        map[agent.GR][agent.GC].agent = i + 1;
+        map[agent.GR][agent.GC].color = agent.color;
+      }
+      this.setState({ map: map, agents: agents, numAgents: agents.length, toDelete: false });
+    } else if (this.state.startToAdd) {
       if (!this.state.map[row][col].isWall && this.state.map[row][col].agent === -1) {
         var map = this.state.map;
         map[row][col].agent = this.state.numAgents + 1;
@@ -420,15 +447,7 @@ class MAPFVisualizer extends Component {
         planningTime: -1,
         planningStatus: "",
         paths: [],
-        whichHeuristic: 3,
-        whichRectangle: 3,
-        whichCorridor: 4,
-        isBypass: true,
-        isPrioritizeConflict: true,
-        isDisjointSplitting: false,
-        isMutex: false,
-        isTarget: true,
-        isSIPP: false,
+        options: structuredClone(this.props.populate.options),
         algorithmSummary: "",
 
         startToAdd: false,
@@ -445,6 +464,138 @@ class MAPFVisualizer extends Component {
     );
   }
 
+  populateDescription() {
+    return (
+      <MKBox px={6} py={3} textAlign="left">
+        {this.state.description.map((description, i) => {
+          return (
+            <MKTypography component="div" variant="body2" mb={1} key={i}>
+              <div dangerouslySetInnerHTML={{ __html: i + 1 + ". " + description }} />
+            </MKTypography>
+          );
+        })}
+      </MKBox>
+    );
+  }
+
+  populateOptions() {
+    var options = [];
+    for (let key in this.state.options) {
+      let option = this.state.options[key];
+      let sliderDisplay = true;
+      if (option.hasOwnProperty("restrictions")) {
+        for (let key2 in option.restrictions) {
+          option.restrictions[key2].forEach((restriction) => {
+            if (this.state.options[key2].value === restriction) {
+              sliderDisplay = false;
+            }
+          });
+        }
+      }
+      options.push(
+        option.options[0] === false ? (
+          // switch button for true/false options
+          <MKBox px={2} key={key}>
+            <Grid container>
+              <Grid item container xs={12} md={5} alignItems="center">
+                <MKTypography variant="h6">{option.name}</MKTypography>
+              </Grid>
+              <Grid item container xs={12} md={7} alignItems="center">
+                <Switch
+                  checked={!!option.value}
+                  onChange={(e) => {
+                    if (option.hasOwnProperty("restrictions")) {
+                      let check = false;
+                      for (let key2 in option.restrictions) {
+                        option.restrictions[key2].forEach((restriction) => {
+                          if (this.state.options[key2].value === restriction) {
+                            check = true;
+                          }
+                        });
+                      }
+                      if (!check) {
+                        option.value = Number(e.target.checked);
+                        this.setState({});
+                      }
+                    } else {
+                      option.value = Number(e.target.checked);
+                      this.setState({});
+                    }
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </MKBox>
+        ) : typeof option.options[0] === "number" ? (
+          sliderDisplay ? (
+            // slider for numeric options
+            <MKBox px={2} key={key}>
+              <Grid container justifyContent="center">
+                <Grid item container xs={12} md={11} alignItems="center">
+                  <Slider
+                    aria-label="Custom marks"
+                    getAriaValueText={(value) => {
+                      return value;
+                    }}
+                    step={0.001}
+                    min={option.options[0]}
+                    max={option.options[1]}
+                    valueLabelDisplay="auto"
+                    color="secondary"
+                    value={option.value}
+                    marks={[
+                      {
+                        value: option.options[0],
+                        label: option.options[0],
+                      },
+                      {
+                        value: option.options[1],
+                        label: option.options[1],
+                      },
+                    ]}
+                    onChange={(e) => {
+                      option.value = Number(e.target.value);
+                      this.setState({});
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </MKBox>
+          ) : (
+            ""
+          )
+        ) : (
+          // radio button
+          <MKBox px={2} key={key}>
+            <MKTypography variant="h6">{option.name}</MKTypography>
+            <RadioGroup
+              row
+              value={option.value}
+              onChange={(e) => {
+                option.value = Number(e.target.value);
+                this.setState({});
+                if (option.hasOwnProperty("control")) {
+                  for (let key2 in option.control) {
+                    option.control[key2].forEach((control) => {
+                      if (Number(e.target.value) === control) {
+                        this.state.options[key2].value = 0;
+                        this.setState({});
+                      }
+                    });
+                  }
+                }
+              }}
+            >
+              {option.options.map((opt, id) => {
+                return <FormControlLabel key={id} value={id} control={<Radio />} label={opt} />;
+              })}
+            </RadioGroup>
+          </MKBox>
+        )
+      );
+    }
+    return options;
+  }
   checkRowOOR() {
     return (
       this.state.addedSRow + 1 > this.state.numRow || this.state.addedGRow + 1 > this.state.numRow
@@ -458,6 +609,7 @@ class MAPFVisualizer extends Component {
   }
 
   render() {
+    console.log(this.state.options);
     return (
       <BaseLayout title="Classic MAPF">
         <MKBox component="section">
@@ -482,24 +634,7 @@ class MAPFVisualizer extends Component {
                   <MKTypography variant="h4">A few things to know</MKTypography>
                 </MKBox>
                 <Divider sx={{ my: 0 }} />
-
-                <MKBox px={6} py={3} textAlign="left">
-                  <MKTypography variant="body2" mb={1}>
-                    1. For better display of the map, the number of rows are restricted to be no
-                    more that the number of columns. So if you want to add a map with more rows than
-                    columns, simply swap these two numbers.
-                  </MKTypography>
-                  <MKTypography variant="body2" mb={1}>
-                    2. The MAPF variant you choose is <b>classic MAPF</b>, and the algorithm you
-                    choose is <b>CBSH2-RTC</b>. The available improvement techniques include:{" "}
-                    <b>
-                      High-level admissible heuristics, Prioritizing conflict, Rectangle reasoning,
-                      Corridor reasoning, Bypassing conflict, Disjoint splitting, Mutex propagation,
-                      Target reasoning, SIPP
-                    </b>
-                    .
-                  </MKTypography>
-                </MKBox>
+                {this.populateDescription()}
                 <Divider light sx={{ my: 0 }} />
                 <MKBox display="flex" justifyContent="right" py={1} px={1.5}>
                   <MKButton onClick={() => this.setState({ isInfoDialogOpen: false })}>
@@ -624,6 +759,7 @@ class MAPFVisualizer extends Component {
                   paths={this.state.paths}
                   numCol={this.state.numCol}
                   startNew={() => this.startNewTask()}
+                  replay={() => this.playAnimation()}
                   isDisabled={!this.state.isAnimationFinished}
                 ></PlanningResult>
               ) : (
@@ -684,154 +820,7 @@ class MAPFVisualizer extends Component {
                                 <MKTypography variant="h4">CBS improvement techniques</MKTypography>
                               </MKBox>
                               <Divider dark="true" sx={{ my: 0 }} />
-                              <MKBox px={2}>
-                                <MKTypography variant="h6">High-level heuristics</MKTypography>
-                                <RadioGroup
-                                  row
-                                  value={this.state.whichHeuristic}
-                                  onChange={(e) =>
-                                    this.setState({ whichHeuristic: e.target.value })
-                                  }
-                                >
-                                  {this.state.heuristics.map((heuristic, id) => {
-                                    return (
-                                      <FormControlLabel
-                                        key={id}
-                                        value={id}
-                                        control={<Radio />}
-                                        label={heuristic}
-                                      />
-                                    );
-                                  })}
-                                </RadioGroup>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <MKTypography variant="h6">Rectangle reasoning</MKTypography>
-                                <RadioGroup
-                                  row
-                                  value={this.state.whichRectangle}
-                                  onChange={(e) =>
-                                    this.setState({ whichRectangle: e.target.value })
-                                  }
-                                >
-                                  {this.state.rectangleReasoning.map((a, id) => {
-                                    return (
-                                      <FormControlLabel
-                                        key={id}
-                                        value={id}
-                                        control={<Radio />}
-                                        label={a}
-                                      />
-                                    );
-                                  })}
-                                </RadioGroup>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <MKTypography variant="h6">Corridor reasoning</MKTypography>
-                                <RadioGroup
-                                  row
-                                  value={this.state.whichCorridor}
-                                  onChange={(e) => this.setState({ whichCorridor: e.target.value })}
-                                >
-                                  {this.state.corridorReasoning.map((a, id) => {
-                                    return (
-                                      <FormControlLabel
-                                        key={id}
-                                        value={id}
-                                        control={<Radio />}
-                                        label={a}
-                                      />
-                                    );
-                                  })}
-                                </RadioGroup>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <Grid container>
-                                  <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">Prioritizing conflict</MKTypography>
-                                  </Grid>
-                                  <Grid item container xs={12} md={7} alignItems="center">
-                                    <Switch
-                                      checked={this.state.isPrioritizeConflict}
-                                      onChange={(e) =>
-                                        this.setState({ isPrioritizeConflict: e.target.checked })
-                                      }
-                                    />
-                                  </Grid>
-                                </Grid>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <Grid container>
-                                  <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">Bypassing conflict</MKTypography>
-                                  </Grid>
-                                  <Grid item container xs={12} md={7} alignItems="center">
-                                    <Switch
-                                      checked={this.state.isBypass}
-                                      onChange={(e) =>
-                                        this.setState({ isBypass: e.target.checked })
-                                      }
-                                    />
-                                  </Grid>
-                                </Grid>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <Grid container>
-                                  <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">Disjoint splitting</MKTypography>
-                                  </Grid>
-                                  <Grid item container xs={12} md={7} alignItems="center">
-                                    <Switch
-                                      checked={this.state.isDisjointSplitting}
-                                      onChange={(e) =>
-                                        this.setState({ isDisjointSplitting: e.target.checked })
-                                      }
-                                    />
-                                  </Grid>
-                                </Grid>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <Grid container>
-                                  <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">Mutex propagation</MKTypography>
-                                  </Grid>
-                                  <Grid item container xs={12} md={7} alignItems="center">
-                                    <Switch
-                                      checked={this.state.isMutex}
-                                      onChange={(e) => this.setState({ isMutex: e.target.checked })}
-                                    />
-                                  </Grid>
-                                </Grid>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <Grid container>
-                                  <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">Target reasoning</MKTypography>
-                                  </Grid>
-                                  <Grid item container xs={12} md={7} alignItems="center">
-                                    <Switch
-                                      checked={this.state.isTarget}
-                                      onChange={(e) =>
-                                        this.setState({ isTarget: e.target.checked })
-                                      }
-                                    />
-                                  </Grid>
-                                </Grid>
-                              </MKBox>
-                              <MKBox px={2}>
-                                <Grid container>
-                                  <Grid item container xs={12} md={5} alignItems="center">
-                                    <MKTypography variant="h6">SIPP</MKTypography>
-                                  </Grid>
-                                  <Grid item container xs={12} md={7} alignItems="center">
-                                    <Switch
-                                      checked={this.state.isSIPP}
-                                      onChange={(e) => this.setState({ isSIPP: e.target.checked })}
-                                    />
-                                  </Grid>
-                                </Grid>
-                              </MKBox>
-
+                              {this.populateOptions()}
                               <Divider light sx={{ my: 0 }} />
                               <MKBox display="flex" justifyContent="right" py={2} px={1.5}>
                                 <MKButton
@@ -921,14 +910,16 @@ class MAPFVisualizer extends Component {
                       lg={10}
                       sx={{ mx: "auto" }}
                       justifyContent="center"
+                      spacing={1}
                     >
                       <Grid item xs={12} md={10} mb={2}>
                         <MKTypography variant="body2" textAlign="center">
-                          To add an agent, first click this button, then click the start location
-                          followed by the goal location on the map.
+                          To add an agent, first click the add button, then click the start location
+                          followed by the goal location on the map. To remove an agent, click the
+                          remove button followed by the agent.
                         </MKTypography>
                       </Grid>
-                      <Grid item xs={12} md={12} mb={1}>
+                      <Grid item xs={12} md={6} mb={1}>
                         <MKButton
                           variant="gradient"
                           color="info"
@@ -939,6 +930,19 @@ class MAPFVisualizer extends Component {
                           }}
                         >
                           add agent
+                        </MKButton>
+                      </Grid>
+                      <Grid item xs={12} md={6} mb={1}>
+                        <MKButton
+                          variant="gradient"
+                          color="error"
+                          startIcon={<DeleteIcon />}
+                          fullWidth
+                          onClick={() => {
+                            this.removeAgent();
+                          }}
+                        >
+                          remove agent
                         </MKButton>
                       </Grid>
                     </Grid>
