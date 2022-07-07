@@ -74,6 +74,7 @@ class MAPFVisualizer extends Component {
       addedSColClick: null,
       toDelete: false,
 
+      usedColors: new Set(),
       name: this.props.populate.name,
       options: structuredClone(this.props.populate.options),
       description: this.props.populate.description,
@@ -260,7 +261,11 @@ class MAPFVisualizer extends Component {
   }
 
   handleAddAgentByClick() {
-    const color = randomColor();
+    const color = randomColor({ luminosity: "light" });
+    while (this.state.usedColors.has(color)) {
+      color = randomColor({ luminosity: "light" });
+    }
+    this.setState({ usedColors: this.state.usedColors.add(color) });
     this.setState({ startToAdd: true, colorToAdd: color });
   }
 
@@ -409,7 +414,7 @@ class MAPFVisualizer extends Component {
     }
   }
 
-  handleMouseUp() {
+  handleMouseUp(row, col) {
     this.setState({ isMousePressed: false });
   }
 
@@ -729,7 +734,7 @@ class MAPFVisualizer extends Component {
                           isPlanned={this.state.isPlanned}
                           onMouseDown={(row, col) => this.handleMouseDown(row, col)}
                           onMouseEnter={(row, col) => this.handleMouseEnter(row, col)}
-                          onMouseUp={() => this.handleMouseUp()}
+                          onMouseUp={(row, col) => this.handleMouseUp(row, col)}
                           sx={{ WebkitUserDrag: "none" }}
                         />
                       );

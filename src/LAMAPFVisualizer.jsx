@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import SingleGrid from "components/Grid";
 import LoadingAnimation from "components/LoadingAnimation";
 import PlanningResult from "components/PlanningResult";
@@ -66,6 +67,17 @@ class LAMAPFVisualizer extends Component {
       isInfoDialogOpen: true,
       isDialogOpen: false,
       isAlgDialogOpen: false,
+
+      startToAdd: false,
+      goalToAdd: false,
+      colorToAdd: "",
+      addedHeightByClick: null,
+      addedWidthByClick: null,
+      addedSRowClick: null,
+      addedSColClick: null,
+      toDelete: false,
+
+      usedColors: new Set(),
     };
   }
 
@@ -124,6 +136,8 @@ class LAMAPFVisualizer extends Component {
 
     this.setState({ isPlanning: true });
 
+    console.log("Requesting solution");
+    console.log(this.state.agents);
     // change agents to border
     this.state.agents.forEach((agent) => {
       var height = agent.height;
@@ -131,8 +145,8 @@ class LAMAPFVisualizer extends Component {
       var color = agent.color;
       for (let i = agent.SR; i < agent.SR + height; i++) {
         for (let j = agent.SC; j < agent.SC + width; j++) {
-          document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "#fff";
           if (i === agent.SR) {
+            console.log(i + " " + j);
             document.getElementById(`grid-${i}-${j}`).style.borderTop = `4px solid ${color}`;
           }
           if (i === agent.SR + height - 1) {
@@ -148,7 +162,6 @@ class LAMAPFVisualizer extends Component {
       }
       for (let i = agent.GR; i < agent.GR + height; i++) {
         for (let j = agent.GC; j < agent.GC + width; j++) {
-          document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "#fff";
           if (i === agent.GR) {
             document.getElementById(`grid-${i}-${j}`).style.borderTop = `4px solid ${color}`;
           }
@@ -200,47 +213,71 @@ class LAMAPFVisualizer extends Component {
       }),
     };
 
+    console.log({
+      row: this.state.numRow,
+      col: this.state.numCol,
+      walls: walls,
+      agents: agents,
+      isMutex: this.state.algorithm === 1,
+    });
+
     fetch("http://34.125.119.104:8080/LA-MAPF", req)
       .then((response) => response.json())
       .then((data) => {
-        this.setState({
-          isPlanning: false,
-          isPlanned: true,
-          planningTime: data.time,
-          planningStatus: data.status,
-          paths: data.paths,
-        });
-        if (data.status >= 0) {
-          var finishTime = 0;
-          data.paths.forEach((path, agentId) => {
-            finishTime = Math.max(finishTime, path.length);
-            var color = this.state.agents[agentId].color;
-            var height = this.state.agents[agentId].height;
-            var width = this.state.agents[agentId].width;
-            for (let t = 0; t < path.length; t++) {
-              var l = this.decodeLocation(parseInt(path[t]));
-              var SR = l.r;
-              var SC = l.c;
-              for (let i = SR; i < SR + height; i++) {
-                for (let j = SC; j < SC + width; j++) {
-                  setTimeout(() => {
-                    document.getElementById(`grid-${i}-${j}`).style.backgroundColor = color;
-                    document.getElementById(`grid-${i}-${j}`).style.border = "";
-                  }, 1000 * t);
-                  if (t < path.length - 1) {
-                    setTimeout(() => {
-                      document.getElementById(`grid-${i}-${j}`).style.backgroundColor = "#ffffff";
-                    }, 1000 * (t + 0.999));
-                  }
-                }
-              }
+        this.setState(
+          {
+            isPlanning: false,
+            isPlanned: true,
+            algorithmSummary: data.algorithm,
+            planningTime: data.time,
+            planningStatus: data.status,
+            paths: data.paths,
+          },
+          () => {
+            if (data.status >= 0) {
+              this.playAnimation();
             }
-          });
-          setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
-        } else if (data.status === -1) {
-        } else if (data.status === -2) {
-        }
+          }
+        );
       });
+  }
+
+  playAnimation() {
+    this.setState({ isAnimationFinished: false });
+    var finishTime = 0;
+    const paths = this.state.paths;
+    for (var t = 0; t < paths.length; t++) {
+      finishTime = Math.max(finishTime, paths[t].length);
+    }
+    for (let t = 0; t < finishTime; t++) {
+      setTimeout(() => {
+        let map = this.state.map;
+        console.log(map);
+        for (let i = 0; i < map.length; i++) {
+          for (let j = 0; j < map[i].length; j++) {
+            map[i][j].isStart = false;
+            map[i][j].agent = -1;
+            map[i][j].color = "";
+          }
+        }
+        for (let i = 0; i < paths.length; i++) {
+          let loc = this.decodeLocation(paths[i][paths[i].length > t ? t : paths[i].length - 1]);
+          for (let x = loc.r; x < loc.r + this.state.agents[i].height; x++) {
+            for (let y = loc.c; y < loc.c + this.state.agents[i].width; y++) {
+              map[x][y].isStart = true;
+              map[x][y].agent = i + 1;
+              map[x][y].color = this.state.agents[i].color;
+            }
+          }
+        }
+        this.setState({ map: map });
+      }, 1000 * t);
+    }
+    setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
+  }
+
+  removeAgent() {
+    this.setState({ toDelete: true });
   }
 
   handleChangeAlg(e) {
@@ -334,7 +371,7 @@ class LAMAPFVisualizer extends Component {
   }
 
   addAgentToMap() {
-    const color = randomColor();
+    const color = randomColor({ luminosity: "light" });
     var newMap = structuredClone(this.state.map);
     for (let i = this.state.addedSRow; i < this.state.addedSRow + this.state.addedHeight; i++) {
       for (let j = this.state.addedSCol; j < this.state.addedSCol + this.state.addedWidth; j++) {
@@ -361,6 +398,16 @@ class LAMAPFVisualizer extends Component {
     this.setState({ map: newMap }, () => this.showSnackbar(color));
   }
 
+  handleAddAgentByClick() {
+    var color = randomColor({ luminosity: "light" });
+    while (this.state.usedColors.has(color)) {
+      color = randomColor({ luminosity: "light" });
+    }
+    this.setState({ usedColors: this.state.usedColors.add(color) });
+    this.setState({ startToAdd: true, colorToAdd: color, toDelete: false });
+    console.log(color);
+  }
+
   emptyForm() {
     this.setState({
       addedSRow: null,
@@ -373,17 +420,174 @@ class LAMAPFVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
-    this.setState({ isMousePressed: true }, () => this.updateWall(row, col));
+    if (this.state.toDelete) {
+      let agentToDelete = this.state.map[row][col].agent;
+      if (agentToDelete === -1) return;
+      let agents = this.state.agents;
+      agents.splice(agentToDelete - 1, 1);
+      let map = this.state.map;
+      for (let i = 0; i < map.length; i++) {
+        for (let j = 0; j < map[i].length; j++) {
+          if (!map[i][j].isWall) {
+            map[i][j].isStart = false;
+            map[i][j].isGoal = false;
+            map[i][j].agent = -1;
+            map[i][j].color = "";
+          }
+        }
+      }
+      for (let i = 0; i < agents.length; i++) {
+        let agent = agents[i];
+        for (let x = agent.SR; x < agent.SR + agent.height; x++) {
+          for (let y = agent.SC; y < agent.SC + agent.width; y++) {
+            map[x][y].isStart = true;
+            map[x][y].agent = i + 1;
+            map[x][y].color = agent.color;
+          }
+        }
+        for (let x = agent.GR; x < agent.GR + agent.height; x++) {
+          for (let y = agent.GC; y < agent.GC + agent.width; y++) {
+            map[x][y].isStart = true;
+            map[x][y].agent = i + 1;
+            map[x][y].color = agent.color;
+          }
+        }
+      }
+      this.setState({ map: map, agents: agents, numAgents: agents.length, toDelete: false });
+    } else if (this.state.startToAdd) {
+      if (!this.state.map[row][col].isWall && this.state.map[row][col].agent === -1) {
+        var map = this.state.map;
+        map[row][col].agent = this.state.numAgents + 1;
+        map[row][col].isStart = true;
+        map[row][col].color = this.state.colorToAdd;
+        this.setState({
+          addedSRowClick: row,
+          addedSColClick: col,
+          addedHeightByClick: 1,
+          addedWidthByClick: 1,
+          map: map,
+          isMousePressed: true,
+        });
+      }
+    } else if (this.state.goalToAdd) {
+      if (!this.state.map[row][col].isWall && this.state.map[row][col].agent === -1) {
+        var map = this.state.map;
+        for (let x = row; x < row + this.state.addedHeightByClick; x++) {
+          for (let y = col; y < col + this.state.addedWidthByClick; y++) {
+            if (
+              x >= this.state.numRow ||
+              y >= this.state.numCol ||
+              map[x][y].isWall ||
+              map[x][y].agent !== -1
+            )
+              return;
+          }
+        }
+
+        for (let x = row; x < row + this.state.addedHeightByClick; x++) {
+          for (let y = col; y < col + this.state.addedWidthByClick; y++) {
+            map[x][y].agent = this.state.numAgents + 1;
+            map[x][y].isGoal = true;
+            map[x][y].color = this.state.colorToAdd;
+          }
+        }
+        this.setState({
+          goalToAdd: false,
+          addedHeightByClick: null,
+          addedWidthByClick: null,
+          addedSRowClick: null,
+          addedSColClick: null,
+          colorToAdd: "",
+          numAgents: this.state.numAgents + 1,
+          map: map,
+          agents: [
+            ...this.state.agents,
+            {
+              SR: this.state.addedSRowClick,
+              SC: this.state.addedSColClick,
+              GR: row,
+              GC: col,
+              height: this.state.addedHeightByClick,
+              width: this.state.addedWidthByClick,
+              color: this.state.colorToAdd,
+            },
+          ],
+        });
+      }
+    } else {
+      this.setState({ isMousePressed: true }, () => this.updateWall(row, col));
+    }
   }
 
   handleMouseEnter(row, col) {
-    if (this.state.isMousePressed) {
+    if (this.state.startToAdd && this.state.isMousePressed) {
+      if (!this.state.map[row][col].isWall) {
+        var map = this.state.map;
+        for (
+          let x = Math.min(row, this.state.addedSRowClick);
+          x <= Math.max(row, this.state.addedSRowClick);
+          x++
+        ) {
+          for (
+            let y = Math.min(col, this.state.addedSColClick);
+            y <= Math.max(col, this.state.addedSColClick);
+            y++
+          ) {
+            if (
+              map[x][y].isWall ||
+              (map[x][y].agent !== -1 && map[x][y].agent !== this.state.numAgents + 1)
+            ) {
+              return;
+            }
+          }
+        }
+        for (let i = 0; i < map.length; i++) {
+          for (let j = 0; j < map[i].length; j++) {
+            if (map[i][j].agent === this.state.numAgents + 1) {
+              map[i][j].isStart = false;
+              map[i][j].agent = -1;
+              map[i][j].color = "";
+            }
+          }
+        }
+        for (
+          let x = Math.min(row, this.state.addedSRowClick);
+          x <= Math.max(row, this.state.addedSRowClick);
+          x++
+        ) {
+          for (
+            let y = Math.min(col, this.state.addedSColClick);
+            y <= Math.max(col, this.state.addedSColClick);
+            y++
+          ) {
+            map[x][y].agent = this.state.numAgents + 1;
+            map[x][y].isStart = true;
+            map[x][y].color = this.state.colorToAdd;
+          }
+        }
+        this.setState({
+          addedHeightByClick: Math.abs(row - this.state.addedSRowClick) + 1,
+          addedWidthByClick: Math.abs(col - this.state.addedSColClick) + 1,
+          map: map,
+        });
+      }
+    } else if (this.state.isMousePressed) {
       this.updateWall(row, col);
     }
   }
 
-  handleMouseUp() {
-    this.setState({ isMousePressed: false });
+  handleMouseUp(row, col) {
+    if (this.state.startToAdd) {
+      this.setState({
+        startToAdd: false,
+        goalToAdd: true,
+        isMousePressed: false,
+        addedSRowClick: Math.min(row, this.state.addedSRowClick),
+        addedSColClick: Math.min(col, this.state.addedSColClick),
+      });
+    } else {
+      this.setState({ isMousePressed: false });
+    }
   }
 
   updateWall(row, col) {
@@ -422,6 +626,10 @@ class LAMAPFVisualizer extends Component {
         planningTime: -1,
         planningStatus: "",
         paths: [],
+        usedColors: new Set(),
+        startToAdd: false,
+        goalToAdd: false,
+        toDelete: false,
       },
       () => {
         for (let i = 0; i < DEFAULTROW; i++) {
@@ -589,7 +797,7 @@ class LAMAPFVisualizer extends Component {
                           isPlanned={this.state.isPlanned}
                           onMouseDown={(row, col) => this.handleMouseDown(row, col)}
                           onMouseEnter={(row, col) => this.handleMouseEnter(row, col)}
-                          onMouseUp={() => this.handleMouseUp()}
+                          onMouseUp={(row, col) => this.handleMouseUp(row, col)}
                         />
                       );
                     })}
@@ -619,6 +827,7 @@ class LAMAPFVisualizer extends Component {
                   paths={this.state.paths}
                   numCol={this.state.numCol}
                   startNew={() => this.startNewTask()}
+                  replay={() => this.playAnimation()}
                   isDisabled={!this.state.isAnimationFinished}
                 ></PlanningResult>
               ) : (
@@ -776,7 +985,7 @@ class LAMAPFVisualizer extends Component {
                         Add agent
                       </MKTypography>
                     </Grid>
-                    <Grid container item xs={12} lg={10} sx={{ mx: "auto" }}>
+                    {/* <Grid container item xs={12} lg={10} sx={{ mx: "auto" }}>
                       <form onSubmit={(e) => this.handleAddAgent(e)}>
                         <Grid container spacing={1}>
                           <Grid item xs={12} md={6}>
@@ -958,6 +1167,49 @@ class LAMAPFVisualizer extends Component {
                           </Snackbar>
                         </Grid>
                       </form>
+                    </Grid> */}
+                    <Grid
+                      container
+                      item
+                      xs={12}
+                      lg={10}
+                      sx={{ mx: "auto" }}
+                      justifyContent="center"
+                      spacing={1}
+                    >
+                      <Grid item xs={12} md={10} mb={2}>
+                        <MKTypography variant="body2" textAlign="center">
+                          To add an agent, first click the add button, then click the start location
+                          and move the mouse while holding down the mouse to design its shape. To
+                          remove an agent, click the remove button followed by the agent.
+                        </MKTypography>
+                      </Grid>
+                      <Grid item xs={12} md={6} mb={1}>
+                        <MKButton
+                          variant="gradient"
+                          color="info"
+                          startIcon={<AddIcon />}
+                          fullWidth
+                          onClick={() => {
+                            this.handleAddAgentByClick();
+                          }}
+                        >
+                          add agent
+                        </MKButton>
+                      </Grid>
+                      <Grid item xs={12} md={6} mb={1}>
+                        <MKButton
+                          variant="gradient"
+                          color="error"
+                          startIcon={<DeleteIcon />}
+                          fullWidth
+                          onClick={() => {
+                            this.removeAgent();
+                          }}
+                        >
+                          remove agent
+                        </MKButton>
+                      </Grid>
                     </Grid>
                     <Grid container item xs={12} lg={10} mt={3} sx={{ mx: "auto" }}>
                       <Grid item xs={12} md={12}>

@@ -34,7 +34,8 @@ export default function SingleGrid(props) {
   var gridColor = isWall ? "#626262" : color;
   var isLabel = col === -1;
   var isTopLeft = row === -1;
-  const content = (isStart ? "S_" : "") + (isGoal ? "G_" : "") + (agentId > 0 ? agentId : " ");
+  const content =
+    (isStart ? "S_" : "") + (isGoal ? "G_" : "") + (agentId > 0 ? `{${agentId}}` : " ");
 
   return (
     <Grid
@@ -43,7 +44,7 @@ export default function SingleGrid(props) {
       id={`grid-${row}-${col}`}
       onMouseDown={() => onMouseDown(row, col)}
       onMouseEnter={() => onMouseEnter(row, col)}
-      onMouseUp={() => onMouseUp()}
+      onMouseUp={() => onMouseUp(row, col)}
       className={classes.square}
       sx={{
         border:
