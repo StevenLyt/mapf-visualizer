@@ -1,13 +1,15 @@
 import { Component } from "react";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import SlowMotionVideoIcon from "@mui/icons-material/SlowMotionVideo";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import Button from "@mui/material/Button";
+import { ToggleButton, ToggleButtonGroup, Grid, Card } from "@mui/material";
 import MKTypography from "components/MKTypography";
 import Container from "@mui/material/Container";
 import Lottie from "react-lottie";
 import Success from "assets/lotties/success.json";
 import Failure from "assets/lotties/failure.json";
+import DefaultInfoCard from "examples/Cards/InfoCards/DefaultInfoCard";
 
 import MKButton from "components/MKButton";
 
@@ -20,16 +22,25 @@ export default class PlanningResult extends Component {
   }
 
   render() {
-    const { algorithm, status, planningTime, paths, startNew, replay, isDisabled } = this.props;
+    const {
+      algorithm,
+      status,
+      planningTime,
+      paths,
+      startNew,
+      replay,
+      isDisabled,
+      speed,
+      setSpeed,
+      agents,
+    } = this.props;
     var isSuccessful = status >= 0;
     var isMemExceeded = status == -5;
-    console.log(status);
-    console.log(status == -1);
     return (
       <Container
         sx={{
           mt: 5,
-          mb: 10,
+          mb: 5,
           position: "relative",
           display: "flex",
           flexDirection: "column",
@@ -56,7 +67,7 @@ export default class PlanningResult extends Component {
           }}
           height={150}
           width={150}
-          style={{ marginBottom: 80, pointerEvents: "none" }}
+          style={{ pointerEvents: "none" }}
         />
         {isMemExceeded ? (
           <MKTypography variant="h5">
@@ -72,22 +83,26 @@ export default class PlanningResult extends Component {
             <MKTypography variant="h5">
               <b>{"Execution time: " + planningTime + " s"}</b>
             </MKTypography>
-            <div className="path-detail">
+            <div>
               {isSuccessful
                 ? paths.map((path, agentId) => {
-                    console.log(path);
                     path = path.map((loc) => {
                       var coordinate = this.decodeLocation(loc);
                       return `(${coordinate.r},${coordinate.c})`;
                     });
                     var p = path.join("->");
+                    var color = agents[agentId].color;
                     return (
-                      <MKTypography variant="h5" key={agentId}>
-                        <b>
-                          <i>{"Agent " + (agentId + 1) + ": "}</i>
-                        </b>
-                        {p}
-                      </MKTypography>
+                      <div key={agentId}>
+                        <MKTypography variant="h5" key={agentId + "f"} sx={{ color: color }}>
+                          <b>
+                            <i>{"Agent " + (agentId + 1) + ": "}</i>
+                          </b>
+                        </MKTypography>
+                        <MKTypography variant="body1" key={agentId + "s"}>
+                          {p}
+                        </MKTypography>
+                      </div>
                     );
                   })
                 : ""}
@@ -95,18 +110,32 @@ export default class PlanningResult extends Component {
           </div>
         )}
         {isSuccessful ? (
-          <MKButton
-            variant="gradient"
-            color="info"
-            startIcon={<PlayCircleOutlineIcon />}
-            onClick={() => replay()}
-            disabled={isSuccessful && isDisabled}
-            sx={{
-              mt: 7,
-            }}
-          >
-            Replay
-          </MKButton>
+          <Grid item xs={12} sx={{ mt: 5 }}>
+            <ToggleButtonGroup
+              color="primary"
+              value={speed}
+              exclusive
+              fullWidth
+              onChange={(_, speed) => setSpeed(speed)}
+            >
+              <ToggleButton value="Slow"><b>Slow</b></ToggleButton>
+              <ToggleButton value="Medium"><b>Medium</b></ToggleButton>
+              <ToggleButton value="Fast"><b>Fast</b></ToggleButton>
+            </ToggleButtonGroup>
+            <MKButton
+              variant="gradient"
+              color="info"
+              startIcon={<PlayCircleOutlineIcon />}
+              onClick={() => replay()}
+              disabled={isSuccessful && isDisabled}
+              fullWidth
+              sx={{
+                mt: 2,
+              }}
+            >
+              Replay
+            </MKButton>
+          </Grid>
         ) : (
           ""
         )}
@@ -120,7 +149,7 @@ export default class PlanningResult extends Component {
             mt: 2,
           }}
         >
-          Start over
+          Start new
         </MKButton>
       </Container>
     );

@@ -49,7 +49,7 @@ var CBSH2RTC = {
   },
   description: [
     "For better display of the map, the number of rows are restricted to be no more that the number of columns. So if you want to add a map with more rows than columns, simply swap these two numbers.",
-    'The MAPF variant you choose is <b>classic MAPF</b>, and the algorithm you choose is <b>CBSH2-RTC</b>. The available improvement techniques include:{" "}<b>High-level admissible heuristics, Prioritizing conflict, Rectangle reasoning, Corridor reasoning, Bypassing conflict, Disjoint splitting, Mutex propagation, Target reasoning, SIPP</b>.',
+    "The MAPF variant you choose is <b>classic MAPF</b>, and the algorithm you choose is <b>CBSH2-RTC</b>. The available improvement techniques include: <b>High-level admissible heuristics, Prioritizing conflict, Rectangle reasoning, Corridor reasoning, Bypassing conflict, Disjoint splitting, Mutex propagation, Target reasoning, SIPP</b>.",
   ],
 };
 

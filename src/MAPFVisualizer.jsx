@@ -78,6 +78,8 @@ class MAPFVisualizer extends Component {
       name: this.props.populate.name,
       options: structuredClone(this.props.populate.options),
       description: this.props.populate.description,
+
+      speed: 0.6,
     };
   }
 
@@ -93,6 +95,19 @@ class MAPFVisualizer extends Component {
       addedSRowClick: null,
       addedSColClick: null,
     });
+  }
+
+  setSpeed(speed) {
+    switch (speed) {
+      case "Slow":
+        this.setState({ speed: 1 });
+        break;
+      case "Medium":
+        this.setState({ speed: 0.6 });
+        break;
+      case "Fast":
+        this.setState({ speed: 0.3 });
+    }
   }
 
   componentDidMount() {}
@@ -168,7 +183,6 @@ class MAPFVisualizer extends Component {
           ? options[key].value
           : options[key].options[options[key].value];
     }
-    console.log(data);
     const req = {
       method: "POST",
       headers: {
@@ -209,7 +223,6 @@ class MAPFVisualizer extends Component {
     for (let t = 0; t < finishTime; t++) {
       setTimeout(() => {
         let map = this.state.map;
-        console.log(map);
         for (let i = 0; i < map.length; i++) {
           for (let j = 0; j < map[i].length; j++) {
             map[i][j].isStart = false;
@@ -224,9 +237,12 @@ class MAPFVisualizer extends Component {
           map[loc.r][loc.c].color = this.state.agents[i].color;
         }
         this.setState({ map: map });
-      }, 1000 * t);
+      }, 1000 * t * this.state.speed);
     }
-    setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
+    setTimeout(
+      () => this.setState({ isAnimationFinished: true }),
+      1000 * finishTime * this.state.speed
+    );
   }
 
   changeMapRow(e) {
@@ -261,7 +277,7 @@ class MAPFVisualizer extends Component {
   }
 
   handleAddAgentByClick() {
-    const color = randomColor({ luminosity: "light" });
+    const color = randomColor({ luminosity: "light", alpha: 0.5 });
     while (this.state.usedColors.has(color)) {
       color = randomColor({ luminosity: "light" });
     }
@@ -457,6 +473,7 @@ class MAPFVisualizer extends Component {
 
         startToAdd: false,
         goalToAdd: false,
+        speed: 0.6,
       },
       () => {
         for (let i = 0; i < DEFAULTROW; i++) {
@@ -614,7 +631,6 @@ class MAPFVisualizer extends Component {
   }
 
   render() {
-    console.log(this.state.options);
     return (
       <BaseLayout title="Classic MAPF">
         <MKBox component="section">
@@ -766,6 +782,11 @@ class MAPFVisualizer extends Component {
                   startNew={() => this.startNewTask()}
                   replay={() => this.playAnimation()}
                   isDisabled={!this.state.isAnimationFinished}
+                  speed={
+                    this.state.speed === 1 ? "Slow" : this.state.speed === 0.6 ? "Medium" : "Fast"
+                  }
+                  setSpeed={(speed) => this.setSpeed(speed)}
+                  agents={this.state.agents}
                 ></PlanningResult>
               ) : (
                 <MKBox component="section" py={2}>

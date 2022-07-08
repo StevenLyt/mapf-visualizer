@@ -6,17 +6,7 @@ import SingleGrid from "components/Grid";
 import LoadingAnimation from "components/LoadingAnimation";
 import PlanningResult from "components/PlanningResult";
 import BaseLayout from "layouts/sections/components/BaseLayout";
-import {
-  Alert,
-  Slide,
-  Modal,
-  Grid,
-  Switch,
-  Divider,
-  Container,
-  TextField,
-  Snackbar,
-} from "@mui/material";
+import { Slide, Modal, Grid, Switch, Divider, Container } from "@mui/material";
 import MKTypography from "components/MKTypography";
 import MKBox from "components/MKBox";
 import MKInput from "components/MKInput";
@@ -78,12 +68,24 @@ class LAMAPFVisualizer extends Component {
       toDelete: false,
 
       usedColors: new Set(),
+      speed: 0.6,
     };
   }
 
+  setSpeed(speed) {
+    switch (speed) {
+      case "Slow":
+        this.setState({ speed: 1 });
+        break;
+      case "Medium":
+        this.setState({ speed: 0.6 });
+        break;
+      case "Fast":
+        this.setState({ speed: 0.3 });
+    }
+  }
+
   adjustMap(height, width, map) {
-    console.log("adjustMap");
-    console.log(height, width);
     this.setState({
       numRow: height,
       numCol: width,
@@ -135,9 +137,6 @@ class LAMAPFVisualizer extends Component {
     }
 
     this.setState({ isPlanning: true });
-
-    console.log("Requesting solution");
-    console.log(this.state.agents);
     // change agents to border
     this.state.agents.forEach((agent) => {
       var height = agent.height;
@@ -146,7 +145,6 @@ class LAMAPFVisualizer extends Component {
       for (let i = agent.SR; i < agent.SR + height; i++) {
         for (let j = agent.SC; j < agent.SC + width; j++) {
           if (i === agent.SR) {
-            console.log(i + " " + j);
             document.getElementById(`grid-${i}-${j}`).style.borderTop = `4px solid ${color}`;
           }
           if (i === agent.SR + height - 1) {
@@ -213,14 +211,6 @@ class LAMAPFVisualizer extends Component {
       }),
     };
 
-    console.log({
-      row: this.state.numRow,
-      col: this.state.numCol,
-      walls: walls,
-      agents: agents,
-      isMutex: this.state.algorithm === 1,
-    });
-
     fetch("http://34.125.119.104:8080/LA-MAPF", req)
       .then((response) => response.json())
       .then((data) => {
@@ -252,7 +242,6 @@ class LAMAPFVisualizer extends Component {
     for (let t = 0; t < finishTime; t++) {
       setTimeout(() => {
         let map = this.state.map;
-        console.log(map);
         for (let i = 0; i < map.length; i++) {
           for (let j = 0; j < map[i].length; j++) {
             map[i][j].isStart = false;
@@ -271,9 +260,12 @@ class LAMAPFVisualizer extends Component {
           }
         }
         this.setState({ map: map });
-      }, 1000 * t);
+      }, 1000 * this.state.speed * t);
     }
-    setTimeout(() => this.setState({ isAnimationFinished: true }), 1000 * finishTime);
+    setTimeout(
+      () => this.setState({ isAnimationFinished: true }),
+      1000 * this.state.speed * finishTime
+    );
   }
 
   removeAgent() {
@@ -317,26 +309,6 @@ class LAMAPFVisualizer extends Component {
 
     this.addAgentToMap();
   }
-
-  // handleDeleteAgent(id) {
-  //   console.log(this.state.map);
-  //   console.log(id);
-  //   var newAgents = structuredClone(this.state.agents);
-  //   newAgents.splice(id, 1);
-  //   var newMap = structuredClone(this.state.map);
-
-  //   for (let i = 0; i < newMap.length; i++) {
-  //     for (let j = 0; j < newMap[0].length; j++) {
-  //       if (newMap[i][j].agent === id + 1) {
-  //         newMap[i][j].agent = -1;
-  //         newMap[i][j].isStart = false;
-  //         newMap[i][j].isGoal = false;
-  //         newMap[i][j].color = "";
-  //       }
-  //     }
-  //   }
-  //   this.setState({ agents: newAgents, map: newMap }, () => console.log(this.state.map));
-  // }
 
   addAgent(color) {
     this.setState({
@@ -405,7 +377,6 @@ class LAMAPFVisualizer extends Component {
     }
     this.setState({ usedColors: this.state.usedColors.add(color) });
     this.setState({ startToAdd: true, colorToAdd: color, toDelete: false });
-    console.log(color);
   }
 
   emptyForm() {
@@ -629,7 +600,12 @@ class LAMAPFVisualizer extends Component {
         usedColors: new Set(),
         startToAdd: false,
         goalToAdd: false,
+        addedHeightByClick: null,
+        addedWidthByClick: null,
+        addedSRowClick: null,
+        addedSColClick: null,
         toDelete: false,
+        speed: 0.6,
       },
       () => {
         for (let i = 0; i < DEFAULTROW; i++) {
@@ -829,6 +805,11 @@ class LAMAPFVisualizer extends Component {
                   startNew={() => this.startNewTask()}
                   replay={() => this.playAnimation()}
                   isDisabled={!this.state.isAnimationFinished}
+                  speed={
+                    this.state.speed === 1 ? "Slow" : this.state.speed === 0.6 ? "Medium" : "Fast"
+                  }
+                  setSpeed={(speed) => this.setSpeed(speed)}
+                  agents={this.state.agents}
                 ></PlanningResult>
               ) : (
                 <MKBox component="section" py={2}>
@@ -960,7 +941,6 @@ class LAMAPFVisualizer extends Component {
                             helperText="Range between 4-30"
                             onChange={(e) => {
                               this.setState({ tempCol: parseInt(e.target.value) });
-                              console.log("this");
                             }}
                             onBlur={(e) => this.changeMapCol(e)}
                             value={this.state.tempCol ? this.state.tempCol : ""}
