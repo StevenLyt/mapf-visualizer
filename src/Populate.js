@@ -111,7 +111,7 @@ var EECBS = {
     },
     suboptimality: {
       name: "suboptimality",
-      options: [1.0, 1.2],
+      options: [1.0, 2.0],
       restrictions: { suboptimalSolver: [0] },
       value: 1.1,
     },
@@ -119,6 +119,21 @@ var EECBS = {
   description: [
     "For better display of the map, the number of rows are restricted to be no more that the number of columns. So if you want to add a map with more rows than columns, simply swap these two numbers.",
     "The MAPF variant you choose is <b>classic MAPF</b>, and the algorithm you choose is <b>EECBS</b>. The available improvement techniques include:<b> High-level admissible heuristics, High-level solvers, Suboptimal solver, Inadmissible heuristics, Prioritizing conflict, Rectangle reasoning, Corridor reasoning, Bypassing conflict, Disjoint splitting, Target reasoning.</b>.",
+  ],
+};
+
+var PBS = {
+  name: "PBS",
+  options: {
+    SIPP: {
+      name: "SIPP",
+      options: [false, true],
+      value: 0,
+    },
+  },
+  description: [
+    "For better display of the map, the number of rows are restricted to be no more that the number of columns. So if you want to add a map with more rows than columns, simply swap these two numbers.",
+    "The MAPF variant you choose is <b>classic MAPF</b>, and the algorithm you choose is <b>Priority-Based Search (PBS)</b>. The available improvement techniques include: <b>Safe Interval Path Planning (SIPP)</b>.",
   ],
 };
 
@@ -137,4 +152,4 @@ var MCCBS = {
   ],
 };
 
-export { CBSH2RTC, EECBS, MCCBS };
+export { CBSH2RTC, EECBS, MCCBS, PBS };

@@ -47,11 +47,12 @@ import MAPFVisualizer from "MAPFVisualizer";
 import EECBSVisualizer from "EECBSVisualizer";
 import LAMAPFVisualizer from "LAMAPFVisualizer";
 import ClassicPaper from "pages/ClassicPaper";
+import MAPFAlgos from "pages/Guide/MAPFAlgos";
 import Guide from "pages/Guide";
 import MapFormat from "pages/Guide/MapFormat";
 import { faBookOpenReader, faChalkboardUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { CBSH2RTC, EECBS } from "Populate";
+import { CBSH2RTC, EECBS, PBS } from "Populate";
 
 const routes = [
   {
@@ -72,6 +73,11 @@ const routes = [
             name: "EECBS",
             route: "/classic-visualizer/EECBS",
             component: <MAPFVisualizer key="EECBS" populate={EECBS} />,
+          },
+          {
+            name: "PBS",
+            route: "/classic-visualizer/PBS",
+            component: <MAPFVisualizer key="PBS" populate={PBS} />,
           },
         ],
       },
@@ -111,6 +117,12 @@ const routes = [
         description: "Format of map input file",
         route: "/guide/map",
         component: <MapFormat />,
+      },
+      {
+        name: "algorithms",
+        description: "Brief description of various MAPF algorithms",
+        route: "/guide/algorithms",
+        component: <MAPFAlgos />,
       },
     ],
   },

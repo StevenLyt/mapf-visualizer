@@ -1,10 +1,13 @@
 [![MIT License][license-shield]][license-url]
+[![Stargazers][stars-shield]][stars-url]
 
 <!-- PROJECT LOGO -->
 <div align="center">
   <h1 align="center"><a href="http://mapf-visualizer.com" style="text-decoration: none;">MAPF Visualizer</a></h1>
   <p align="center"><i>A visualization tool for multi-agent path finding algorithms.</i></p>
   <img src='./src/assets/images/landingpage.png' />
+  <img src='./src/assets/images/map.png' />
+  <img src='./src/assets/images/map2.png' />
 </div>
 
 ## About The Project
@@ -92,3 +95,5 @@ For more information about me, please visit my [personal website](https://yutong
 
 [license-shield]: https://img.shields.io/github/license/stevenlyt/mapf-visualizer?label=license&style=for-the-badge
 [license-url]: https://github.com/stevenlyt/mapf-visualizer/blob/master/LICENSE.txt
+[stars-shield]: https://img.shields.io/github/stars/Stevenlyt/mapf-visualizer?style=for-the-badge
+[stars-url]: https://github.com/Stevenlyt/mapf-visualizer/stargazers
