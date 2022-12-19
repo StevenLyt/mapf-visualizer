@@ -189,14 +189,13 @@ class MAPFVisualizer extends Component {
         // Accept: "application/json",
         "Content-Type": "application/json",
       },
-       //   mode: 'no-cors',
- //   credentials: 'include',
-	    body: JSON.stringify(data),
-     // url: `http://localhost:8080`
+      //   mode: 'no-cors',
+      //   credentials: 'include',
+      body: JSON.stringify(data),
+      // url: `http://localhost:8080`
     };
-    // fetch("http://localhost:8080/MAPF", req)
-fetch("http://52.53.223.36:8080/"+ this.state.name, req)
-	//  fetch("http://34.125.119.104:8080/" + this.state.name, req)
+    // fetch("http://52.53.223.36:8080/"+ this.state.name, req)
+    fetch(`${process.env.REACT_APP_URL}/${this.state.name}`, req)
       .then((response) => response.json())
       .then((data) => {
         this.setState(

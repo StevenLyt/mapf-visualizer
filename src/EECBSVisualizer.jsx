@@ -204,8 +204,7 @@ class EECBSVisualizer extends Component {
         isCorridor: this.state.isCorridor,
       }),
     };
-    // fetch("http://localhost:8080/MAPF", req)
-    fetch("http://34.125.119.104:8080/EECBS", req)
+    fetch(`${process.env.REACT_APP_URL}/EECBS`, req)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
