@@ -14,9 +14,9 @@
 
 This project provides a visualization tool for Multi-Agent Path Finding (MAPF) algorithms.
 
-There have been tons of single agent path finding visualization websites, yet they all make use of well-established algorithms such as A star and Dijkstra. However, the field of multi agent path finding is relatively new (CBS, an important MAPF algorithm, was proposed in 2012) and thus didn't gain as much public attention.
+There have been tons of single-agent path finding visualization websites, yet they all make use of well-established algorithms such as A star and Dijkstra. However, the field of multi-agent path finding is relatively new (CBS, an important MAPF algorithm, was proposed in 2012) and thus didn't gain as much public attention.
 
-This website aims at helping people better understand MAPF by offering a real-time visualization tool. Usually running a MAPF solver involves the following steps:
+This website aims to help people better understand MAPF by offering a real-time visualization tool. Usually, running a MAPF solver involves the following steps:
 
 1. compile the C++ code into executables
 2. put the map and instance into two separate files with contents formatted in terms of certain rules
@@ -70,13 +70,13 @@ This project is bootstrapped with the following frameworks and libraries:
 Open [MAPF Visualizer](http://mapf-visualizer.com) in one of the following browsers for optimal support:
 
 - Chrome v98 and later
-- FIrefox v94 or later
+- Firefox v94 or later
 - Edge v98 or later
 - Safari v15.4 or later
 
 ## Contributing
 
-If you have a MAPF-related algorithm that might fit into the framework of this website, please reach out to me via [email](mailto:yli81711@usc.edu) and I'll be very willing to incorporate it into the website.
+If you have a MAPF-related algorithm that might fit into this website's framework, please contact me via [email](mailto:yli81711@usc.edu) and I'll be very willing to incorporate it into the website.
 
 ## More to implement
 
