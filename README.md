@@ -72,7 +72,7 @@ Open [MAPF Visualizer](http://mapf-visualizer.com) in one of the following brows
 - Chrome v98 and later
 - FIrefox v94 or later
 - Edge v98 or later
-- Safari v15.4 or later (**Note: this requires that you have updated to Mac OS Monterey 12.4, which most people haven't.**)
+- Safari v15.4 or later
 
 ## Contributing
 
