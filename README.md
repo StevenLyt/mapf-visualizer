@@ -3,7 +3,7 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
-  <h1 align="center"><a href="http://mapf-visualizer.com" style="text-decoration: none;">MAPF Visualizer</a></h1>
+  <h1 align="center"><a href="https://mapf-visualizer.com" style="text-decoration: none;">MAPF Visualizer</a></h1>
   <p align="center"><i>A visualization tool for multi-agent path finding algorithms.</i></p>
   <img src='./src/assets/images/landingpage.png' />
   <img src='./src/assets/images/map.png' />
@@ -67,7 +67,7 @@ This project is bootstrapped with the following frameworks and libraries:
 
 ## Getting Started
 
-Open [MAPF Visualizer](http://mapf-visualizer.com) in one of the following browsers for optimal support:
+Open [MAPF Visualizer](https://mapf-visualizer.com) in one of the following browsers for optimal support:
 
 - Chrome v98 and later
 - Firefox v94 or later
